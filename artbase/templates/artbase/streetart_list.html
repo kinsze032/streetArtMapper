@@ -1,24 +1,26 @@
 {% extends 'artbase/main.html' %}
-
+{% block title %}
+{{ page_title|default:'Lista Street Art' }}
+{% endblock title %}
 {% block content %}
 <ul class="list-group">
-  {% for art in streetarts %}
+  {% for art in art_list %}
   <li class="list-group-item">
-      <span class="text-info">Tytuł </span> <span>{{ art.title }}</span>
+      <span class="text-info">Tytuł </span> <span>{{ art.art.title }}</span>
       <br>
-      <span class="text-info">Artysta: </span><span>{{ art.artist }}</span>
+      <span class="text-info">Artysta: </span><span>{{ art.art.artist }}</span>
       <br>
-      <span class="text-info">Rok powstania: </span><span>{{ art.year }}</span>
+      <span class="text-info">Miasto: </span><span>{{ art.art.location.city }}</span>
       <br>
-      <span class="text-info">Ocena: </span><span class="badge badge-primary badge-pill">{{ art.art_rating }}</span>
+      <span class="text-info">Ocena: </span><span class="badge badge-secondary badge-pill">{{ art.art_rating }}</span>
       <br>
       <span class="text-info">Liczba recenzji: </span><span>{{ art.number_of_reviews }}</span>
       <br>
-      {% if not item.art_rating %}
+      {% if not art.art_rating %}
       <span class="text-secondary">Napisz pierwszą recenzję.</span>
       <br>
       {% endif %}
-      <a class="btn btn-primary btn-sm active" role="button" href="{% url 'art-detail' art.pk %}">Szczegóły streetartu</a></li>
+      <a class="btn btn-outline-secondary my-2 my-sm-0" role="button" href="{% url 'art-detail' art.art.pk %}">Szczegóły Street Artu</a></li>
   </li>
   {% endfor %}
 </ul>

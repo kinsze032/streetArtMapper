@@ -21,6 +21,6 @@ from artbase.views import HomeView, StreetArtDetailView, StreetArtListView
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', HomeView.as_view(), name='home'),
-    path('streetart/<int:pk>', StreetArtDetailView.as_view(), name='art-detail'),
+    path('streetart/<int:pk>/', StreetArtDetailView.as_view(), name='art-detail'),
     path('streetart/list/', StreetArtListView.as_view(), name='art-list'),
 ]

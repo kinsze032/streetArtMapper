@@ -11,17 +11,17 @@
 
     <title>
         {% block title %}
-        {{ page_title|default:'Home Page' }}
+        {{ page_title|default:'Strona główna' }}
         {% endblock title %}
     </title>
 </head>
-<body>
     {% include 'artbase/navbar.html' %}
+<body>
     {% block content %}
         {% include 'artbase/map.html' %}
     {% endblock %}
-
 </body>
+
 <!-- Footer -->
 <footer class="footer">
     <div class="container">

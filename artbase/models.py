@@ -1,3 +1,4 @@
+from django.contrib import auth
 from django.db import models
 
 
@@ -8,11 +9,9 @@ class StreetArt(models.Model):
     description = models.TextField()
     category = models.ForeignKey('Category', on_delete=models.CASCADE)
     location = models.OneToOneField('Location', on_delete=models.CASCADE)
-    # rated_by_users = models.ManyToManyField(User, through='StreetArtUserRating')
-    #można się odwołać do listy Street Artu ocenionego przez użytkownika
 
     def __str__(self):
-        return f"{self.title} - {self.category}"
+        return self.title
 
 
 class Category(models.Model):
@@ -37,19 +36,10 @@ class Location(models.Model):
         return self.city
 
 
-# class StreetArtUserRating(models.Model):
-#     street_art = models.ForeignKey(StreetArt, on_delete=models.CASCADE)
-#     user = models.ForeignKey(User, on_delete=models.CASCADE)
-#     rating = models.IntegerField()
-
-
-# class Review(models.Model):
-#     content = models.TextField(help_text="Tekst recenzji.")
-#     rating = models.IntegerField(help_text="Ocena użytkownika.")
-#     date_created = models.DateTimeField(auto_now_add=True,
-#                                         help_text="Data i czas utworzenia recenzji.")
-#     date_edited = models.DateTimeField(null=True,
-#                                        help_text="Data i czas ostatniej edycji recenzji.")
-#     creator = models.ForeignKey(auth.get_user_model(), on_delete=models.CASCADE)
-#     art = models.ForeignKey(StreetArt, on_delete=models.CASCADE,
-#                              help_text="Recenzowany streetart.")
+class Review(models.Model):
+    content = models.TextField(help_text="Tekst recenzji.")
+    rating = models.IntegerField(help_text="Ocena użytkownika.")
+    date_created = models.DateTimeField(auto_now_add=True, help_text="Data i czas utworzenia recenzji.")
+    date_edited = models.DateTimeField(null=True, help_text="Data i czas ostatniej edycji recenzji.")
+    creator = models.ForeignKey(auth.get_user_model(), on_delete=models.CASCADE)
+    art = models.ForeignKey(StreetArt, on_delete=models.CASCADE, help_text="Recenzowany streetart.")

@@ -1,10 +1,9 @@
-from django.shortcuts import render
-from django.urls import reverse_lazy
+from django.db.models import Avg
+from django.shortcuts import render, get_object_or_404
 from django.views import View
-import folium
-from folium.plugins import FastMarkerCluster
 
-from artbase.models import StreetArt, Category, Location
+import folium
+from artbase.models import StreetArt
 
 
 class HomeView(View):
@@ -19,48 +18,72 @@ class HomeView(View):
             coordinates = (art.location.latitude, art.location.longitude)
             popup_html = f"<a href='/streetart/{art.id}' target='_blank'>{art.title} ({art.category.get_type_display()})</a>"
 
-            if art.category.get_type_display() == "mural":
+            if art.category.get_type_display() == 'mural':
                 folium.Marker(
                     coordinates,
                     popup=popup_html,
-                    icon=folium.Icon(color="red", icon="info-sign")
+                    icon=folium.Icon(color='red', icon='info-sign')
                 ).add_to(map)
-            if art.category.get_type_display() == "neon":
+            if art.category.get_type_display() == 'neon':
                 folium.Marker(
                     coordinates,
                     popup=popup_html,
-                    icon=folium.Icon(color="blue", icon="info-sign")
+                    icon=folium.Icon(color='blue', icon='info-sign')
                 ).add_to(map)
-            if art.category.get_type_display() == "graffiti":
+            if art.category.get_type_display() == 'graffiti':
                 folium.Marker(
                     coordinates,
                     popup=popup_html,
-                    icon=folium.Icon(color="green", icon="info-sign")
+                    icon=folium.Icon(color='green', icon='info-sign')
                 ).add_to(map)
-            if art.category.get_type_display() == "instalacja":
+            if art.category.get_type_display() == 'instalacja':
                 folium.Marker(
                     coordinates,
                     popup=popup_html,
-                    icon=folium.Icon(color="darkpurple", icon="info-sign")
+                    icon=folium.Icon(color='darkpurple', icon='info-sign')
                 ).add_to(map)
-
-        #use FastMarerCluster to generate the clusters on the map
-        #to do this, we pass list of all(lat, lon) tuples in the data
-        # latitudes = [art.location.latitude for art in arts]
-        # longitudes = [art.location.longitude for art in arts]
-        #
-        # FastMarkerCluster(data=list(zip(latitudes, longitudes))).add_to(map)
 
         context = {'map': map._repr_html_()}
-        return render(request, "artbase/main.html", context)
-
-
-class StreetArtDetailView(View):
-    pass
+        return render(request, 'artbase/main.html', context)
 
 
 class StreetArtListView(View):
     def get(self, request):
         streetarts = StreetArt.objects.all()
-        context = {'streetarts': streetarts}
+        art_with_reviews = []
+        for art in streetarts:
+            reviews = art.review_set.all()
+            if reviews:
+                art_rating = reviews.aggregate(Avg('rating'))
+                number_of_reviews = len(reviews)
+            else:
+                art_rating = None
+                number_of_reviews = 0
+
+            art_with_reviews.append({
+                'art': art,
+                'art_rating': art_rating,
+                'number_of_reviews': number_of_reviews,
+            })
+        context = {'art_list': art_with_reviews}
         return render(request, 'artbase/streetart_list.html', context)
+
+
+class StreetArtDetailView(View):
+    def get(self, request, pk):
+        art = get_object_or_404(StreetArt, pk=pk)
+        reviews = art.review_set.all()
+        if reviews:
+            art_rating = reviews.aggregate(Avg('rating'))
+            context = {
+                'art': art,
+                'art_rating': art_rating,
+                'reviews': reviews,
+            }
+        else:
+            context = {
+                'art': art,
+                'art_rating': None,
+                'reviews': None,
+            }
+        return render(request, 'artbase/streetart_detail.html', context)
