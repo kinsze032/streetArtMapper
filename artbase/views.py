@@ -87,3 +87,10 @@ class StreetArtDetailView(View):
                 'reviews': None,
             }
         return render(request, 'artbase/streetart_detail.html', context)
+
+
+class StreetArtSearchView(View):
+    def get(self, request):
+        search_text = request.GET.get("search", "")
+        return render(request, "artbase/search-results.html", {"search_text": search_text})
+

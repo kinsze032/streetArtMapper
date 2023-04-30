@@ -17,10 +17,12 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from artbase.views import HomeView, StreetArtDetailView, StreetArtListView
+from artbase.views import StreetArtSearchView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', HomeView.as_view(), name='home'),
     path('streetart/<int:pk>/', StreetArtDetailView.as_view(), name='art-detail'),
     path('streetart/list/', StreetArtListView.as_view(), name='art-list'),
+    path('streetart/search/', StreetArtSearchView.as_view(), name='art-search'),
 ]
