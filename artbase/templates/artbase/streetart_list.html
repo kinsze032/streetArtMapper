@@ -1,0 +1,25 @@
+{% extends 'artbase/main.html' %}
+
+{% block content %}
+<ul class="list-group">
+  {% for art in streetarts %}
+  <li class="list-group-item">
+      <span class="text-info">Tytuł </span> <span>{{ art.title }}</span>
+      <br>
+      <span class="text-info">Artysta: </span><span>{{ art.artist }}</span>
+      <br>
+      <span class="text-info">Rok powstania: </span><span>{{ art.year }}</span>
+      <br>
+      <span class="text-info">Ocena: </span><span class="badge badge-primary badge-pill">{{ art.art_rating }}</span>
+      <br>
+      <span class="text-info">Liczba recenzji: </span><span>{{ art.number_of_reviews }}</span>
+      <br>
+      {% if not item.art_rating %}
+      <span class="text-secondary">Napisz pierwszą recenzję.</span>
+      <br>
+      {% endif %}
+      <a class="btn btn-primary btn-sm active" role="button" href="{% url 'art-detail' art.pk %}">Szczegóły streetartu</a></li>
+  </li>
+  {% endfor %}
+</ul>
+{% endblock %}
