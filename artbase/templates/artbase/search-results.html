@@ -1,5 +1,23 @@
 {% extends 'artbase/main.html' %}
 
 {% block content %}
-    <h3>Wyniki wyszukiwania dla <em>{{ search_text }}</em></h3>
+    {% include 'artbase/form.html' %}
+
+    {% if form.is_valid and search_text %}
+        <h3>Wyniki wyszukiwania dla <em>{{ search_text }}</em></h3>
+        <ul class="list-group">
+            {% for art in arts %}
+                <li class="list-group-item">
+                    <span class="text-info">Tytuł: </span> <a href="{% url 'art-detail' art.pk %}">{{ art }}</a>
+                    <br>
+                    <span class="text-info">Miasto: </span><span>{{ art.location.city }}</span>
+                    <br>
+                    <span class="text-info">Typ: </span><span>{{ art.category.get_type_name }}</span>
+                    <br>
+                </li>
+            {% empty %}
+                <li class="list-group-item">Nie znaleziono wyników.</li>
+            {% endfor %}
+        </ul>
+        {% endif %}
 {% endblock %}

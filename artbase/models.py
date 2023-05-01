@@ -1,5 +1,7 @@
-from django.contrib import auth
+from django.contrib.auth import get_user_model
 from django.db import models
+
+User = get_user_model()
 
 
 class StreetArt(models.Model):
@@ -26,6 +28,9 @@ class Category(models.Model):
     def __str__(self):
         return self.get_type_display()
 
+    def get_type_name(self):
+        return self.ArtworkType(self.type).name
+
 
 class Location(models.Model):
     city = models.CharField(max_length=100)
@@ -41,5 +46,5 @@ class Review(models.Model):
     rating = models.IntegerField(help_text="Ocena użytkownika.")
     date_created = models.DateTimeField(auto_now_add=True, help_text="Data i czas utworzenia recenzji.")
     date_edited = models.DateTimeField(null=True, help_text="Data i czas ostatniej edycji recenzji.")
-    creator = models.ForeignKey(auth.get_user_model(), on_delete=models.CASCADE)
+    creator = models.ForeignKey(User, on_delete=models.CASCADE)
     art = models.ForeignKey(StreetArt, on_delete=models.CASCADE, help_text="Recenzowany streetart.")

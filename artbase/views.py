@@ -3,7 +3,8 @@ from django.shortcuts import render, get_object_or_404
 from django.views import View
 
 import folium
-from artbase.models import StreetArt
+from artbase.models import StreetArt, Category
+from artbase.forms import SearchForm
 
 
 class HomeView(View):
@@ -49,9 +50,9 @@ class HomeView(View):
 
 class StreetArtListView(View):
     def get(self, request):
-        streetarts = StreetArt.objects.all()
+        street_arts = StreetArt.objects.all()
         art_with_reviews = []
-        for art in streetarts:
+        for art in street_arts:
             reviews = art.review_set.all()
             if reviews:
                 art_rating = reviews.aggregate(Avg('rating'))
@@ -91,6 +92,24 @@ class StreetArtDetailView(View):
 
 class StreetArtSearchView(View):
     def get(self, request):
-        search_text = request.GET.get("search", "")
-        return render(request, "artbase/search-results.html", {"search_text": search_text})
+        search_text = request.GET.get('search', '')
+        form = SearchForm(request.GET)
+        arts = set()
+        if form.is_valid() and form.cleaned_data['search']:
+            search = form.cleaned_data['search']
+            search_in = form.cleaned_data.get('search_in') or 'title'
+            if search_in == 'title':
+                arts = StreetArt.objects.filter(title__icontains=search)
+            elif search_in == 'location__city':
+                arts = StreetArt.objects.filter(location__city__icontains=search)
+            elif search_in == 'category__type':
+                if search.lower() == 'mural':
+                    arts = StreetArt.objects.filter(category__type=Category.ArtworkType.MURAL)
+                elif search.lower() == 'instalacja':
+                    arts = StreetArt.objects.filter(category__type=Category.ArtworkType.INSTALACJA)
+                elif search.lower() == 'graffiti':
+                    arts = StreetArt.objects.filter(category__type=Category.ArtworkType.GRAFFITI)
+                elif search.lower() == 'neon':
+                    arts = StreetArt.objects.filter(category__type=Category.ArtworkType.NEON)
 
+        return render(request, "artbase/search-results.html", {"form": form, "search_text": search_text, "arts": arts})
