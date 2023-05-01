@@ -87,15 +87,18 @@ class StreetArtDetailView(View):
 
 
 class StreetArtSearchView(View):
+    template_name = "artbase/search-results.html"
+    form_class = SearchForm
+
     def get(self, request, *args, **kwargs):
         context = {
-            "form": SearchForm(initial={"search": request.GET.get("search", "")}),
+            "form": self.form_class(initial={"search": request.GET.get("search", ""), "search_in": "location__city"}),
         }
-        return render(request, "artbase/search-results.html", context)
+        return render(request, self.template_name, context)
 
     def post(self, request, *args, **kwargs):
         search_text = request.POST.get("search", "")
-        form = SearchForm(request.POST)
+        form = self.form_class(request.POST)
         arts = set()
         context = {"form": form}
 
@@ -119,4 +122,4 @@ class StreetArtSearchView(View):
             context["search_text"] = search_text
             context["arts"] = arts
 
-        return render(request, "artbase/search-results.html", context)
+        return render(request, self.template_name, context)
