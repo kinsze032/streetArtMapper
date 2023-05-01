@@ -11,4 +11,5 @@ class SearchForm(forms.Form):
             ('category__type', 'Typ'),
         ),
         label="Szukaj w ",
+        initial='location__city',
     )

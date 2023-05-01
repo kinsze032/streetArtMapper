@@ -21,7 +21,7 @@
     </form>
     <br>
 
-    {% if form.is_valid%}
+    {% if form.is_valid and search_text %}
         <span class="text-info">Wyniki wyszukiwania dla <em><b>{{ search_text }}</b></em></span>
         <ul class="list-group">
             {% for art in arts %}

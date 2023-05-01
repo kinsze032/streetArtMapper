@@ -89,7 +89,7 @@ class StreetArtDetailView(View):
 class StreetArtSearchView(View):
     def get(self, request, *args, **kwargs):
         context = {
-            "form": SearchForm(),
+            "form": SearchForm(initial={"search": request.GET.get("search", "")}),
         }
         return render(request, "artbase/search-results.html", context)
 
@@ -97,9 +97,7 @@ class StreetArtSearchView(View):
         search_text = request.POST.get("search", "")
         form = SearchForm(request.POST)
         arts = set()
-        context = {
-            "form": form
-        }
+        context = {"form": form}
 
         if form.is_valid() and form.cleaned_data["search"]:
             search = form.cleaned_data["search"]
