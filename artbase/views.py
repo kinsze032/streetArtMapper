@@ -19,33 +19,27 @@ class HomeView(View):
             coordinates = (art.location.latitude, art.location.longitude)
             popup_html = f"<a href='/streetart/{art.id}' target='_blank'>{art.title} ({art.category.get_type_display()})</a>"
 
-            if art.category.get_type_display() == 'mural':
+            if art.category.get_type_display() == "mural":
                 folium.Marker(
-                    coordinates,
-                    popup=popup_html,
-                    icon=folium.Icon(color='red', icon='info-sign')
+                    coordinates, popup=popup_html, icon=folium.Icon(color="red", icon="info-sign")
                 ).add_to(map)
-            if art.category.get_type_display() == 'neon':
+            if art.category.get_type_display() == "neon":
                 folium.Marker(
-                    coordinates,
-                    popup=popup_html,
-                    icon=folium.Icon(color='blue', icon='info-sign')
+                    coordinates, popup=popup_html, icon=folium.Icon(color="blue", icon="info-sign")
                 ).add_to(map)
-            if art.category.get_type_display() == 'graffiti':
+            if art.category.get_type_display() == "graffiti":
                 folium.Marker(
-                    coordinates,
-                    popup=popup_html,
-                    icon=folium.Icon(color='green', icon='info-sign')
+                    coordinates, popup=popup_html, icon=folium.Icon(color="green", icon="info-sign")
                 ).add_to(map)
-            if art.category.get_type_display() == 'instalacja':
+            if art.category.get_type_display() == "instalacja":
                 folium.Marker(
                     coordinates,
                     popup=popup_html,
-                    icon=folium.Icon(color='darkpurple', icon='info-sign')
+                    icon=folium.Icon(color="darkpurple", icon="info-sign"),
                 ).add_to(map)
 
-        context = {'map': map._repr_html_()}
-        return render(request, 'artbase/main.html', context)
+        context = {"map": map._repr_html_()}
+        return render(request, "artbase/main.html", context)
 
 
 class StreetArtListView(View):
@@ -55,19 +49,21 @@ class StreetArtListView(View):
         for art in street_arts:
             reviews = art.review_set.all()
             if reviews:
-                art_rating = reviews.aggregate(Avg('rating'))
+                art_rating = reviews.aggregate(Avg("rating"))
                 number_of_reviews = len(reviews)
             else:
                 art_rating = None
                 number_of_reviews = 0
 
-            art_with_reviews.append({
-                'art': art,
-                'art_rating': art_rating,
-                'number_of_reviews': number_of_reviews,
-            })
-        context = {'art_list': art_with_reviews}
-        return render(request, 'artbase/streetart_list.html', context)
+            art_with_reviews.append(
+                {
+                    "art": art,
+                    "art_rating": art_rating,
+                    "number_of_reviews": number_of_reviews,
+                }
+            )
+        context = {"art_list": art_with_reviews}
+        return render(request, "artbase/streetart_list.html", context)
 
 
 class StreetArtDetailView(View):
@@ -75,41 +71,54 @@ class StreetArtDetailView(View):
         art = get_object_or_404(StreetArt, pk=pk)
         reviews = art.review_set.all()
         if reviews:
-            art_rating = reviews.aggregate(Avg('rating'))
+            art_rating = reviews.aggregate(Avg("rating"))
             context = {
-                'art': art,
-                'art_rating': art_rating,
-                'reviews': reviews,
+                "art": art,
+                "art_rating": art_rating,
+                "reviews": reviews,
             }
         else:
             context = {
-                'art': art,
-                'art_rating': None,
-                'reviews': None,
+                "art": art,
+                "art_rating": None,
+                "reviews": None,
             }
-        return render(request, 'artbase/streetart_detail.html', context)
+        return render(request, "artbase/streetart_detail.html", context)
 
 
 class StreetArtSearchView(View):
-    def get(self, request):
-        search_text = request.GET.get('search', '')
-        form = SearchForm(request.GET)
+    def get(self, request, *args, **kwargs):
+        context = {
+            "form": SearchForm(),
+        }
+        return render(request, "artbase/search-results.html", context)
+
+    def post(self, request, *args, **kwargs):
+        search_text = request.POST.get("search", "")
+        form = SearchForm(request.POST)
         arts = set()
-        if form.is_valid() and form.cleaned_data['search']:
-            search = form.cleaned_data['search']
-            search_in = form.cleaned_data.get('search_in') or 'title'
-            if search_in == 'title':
+        context = {
+            "form": form
+        }
+
+        if form.is_valid() and form.cleaned_data["search"]:
+            search = form.cleaned_data["search"]
+            search_in = form.cleaned_data.get("search_in") or "title"
+            if search_in == "title":
                 arts = StreetArt.objects.filter(title__icontains=search)
-            elif search_in == 'location__city':
+            elif search_in == "location__city":
                 arts = StreetArt.objects.filter(location__city__icontains=search)
-            elif search_in == 'category__type':
-                if search.lower() == 'mural':
+            elif search_in == "category__type":
+                if search.lower() == "mural":
                     arts = StreetArt.objects.filter(category__type=Category.ArtworkType.MURAL)
-                elif search.lower() == 'instalacja':
+                elif search.lower() == "instalacja":
                     arts = StreetArt.objects.filter(category__type=Category.ArtworkType.INSTALACJA)
-                elif search.lower() == 'graffiti':
+                elif search.lower() == "graffiti":
                     arts = StreetArt.objects.filter(category__type=Category.ArtworkType.GRAFFITI)
-                elif search.lower() == 'neon':
+                elif search.lower() == "neon":
                     arts = StreetArt.objects.filter(category__type=Category.ArtworkType.NEON)
 
-        return render(request, "artbase/search-results.html", {"form": form, "search_text": search_text, "arts": arts})
+            context["search_text"] = search_text
+            context["arts"] = arts
+
+        return render(request, "artbase/search-results.html", context)
