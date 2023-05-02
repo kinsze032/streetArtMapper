@@ -1,6 +1,7 @@
 from django.db.models import Avg
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from django.views import View
 from django.utils import timezone
 
@@ -20,25 +21,25 @@ class HomeView(View):
         # add a marker to the map for each street art
         for art in arts:
             coordinates = (art.location.latitude, art.location.longitude)
-            popup_html = f"<a href='/streetart/{art.id}' target='_blank'>{art.title} ({art.category.get_type_display()})</a>"
+            popup_html = f"<a href='/streetart/{art.id}' target='_blank'>{art.title}</a>"
 
             if art.category.get_type_display() == "mural":
                 folium.Marker(
-                    coordinates, popup=popup_html, icon=folium.Icon(color="red", icon="info-sign")
+                    coordinates, popup=popup_html, icon=folium.Icon(color="red", icon="paint-brush", prefix="fa")
                 ).add_to(map)
             if art.category.get_type_display() == "neon":
                 folium.Marker(
-                    coordinates, popup=popup_html, icon=folium.Icon(color="blue", icon="info-sign")
+                    coordinates, popup=popup_html, icon=folium.Icon(color="blue", icon="lightbulb", prefix="fa")
                 ).add_to(map)
             if art.category.get_type_display() == "graffiti":
                 folium.Marker(
-                    coordinates, popup=popup_html, icon=folium.Icon(color="green", icon="info-sign")
+                    coordinates, popup=popup_html, icon=folium.Icon(color="green", icon="eyedropper", prefix="fa")
                 ).add_to(map)
             if art.category.get_type_display() == "instalacja":
                 folium.Marker(
                     coordinates,
                     popup=popup_html,
-                    icon=folium.Icon(color="darkpurple", icon="info-sign"),
+                    icon=folium.Icon(color="darkpurple", icon="star"),
                 ).add_to(map)
 
         context = {"map": map._repr_html_()}
@@ -205,3 +206,8 @@ class CreateReviewView(View):
             "related_model": "StreetArt",
         }
         return render(request, self.template_name, context)
+
+
+@login_required
+def profile(request):
+    return render(request, 'artbase/profile.html')
