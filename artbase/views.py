@@ -118,6 +118,7 @@ class StreetArtSearchView(View):
         context = {
             "form": form,
             "search_text": search_text,
+            "search_in": search_in,
             "arts": self.get_arts_queryset(search_text, search_in)
             if search_text
             else StreetArt.objects.none(),
@@ -137,6 +138,7 @@ class StreetArtSearchView(View):
             arts = self.get_arts_queryset(search_text, search_in)
 
         context["search_text"] = search_text
+        context["search_in"] = search_in
         context["arts"] = arts
         return render(request, self.template_name, context)
 

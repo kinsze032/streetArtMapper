@@ -8,9 +8,9 @@ class SearchForm(forms.Form):
     search_in = forms.ChoiceField(
         required=False,
         choices=(
+            ("category__type", "Typ"),
             ("title", "Tytuł"),
             ("location__city", "Miasto"),
-            ("category__type", "Typ"),
         ),
         label="Szukaj w ",
         initial="category__type",
