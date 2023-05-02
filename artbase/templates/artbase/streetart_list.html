@@ -20,7 +20,8 @@
       <span class="text-secondary">Napisz pierwszą recenzję.</span>
       <br>
       {% endif %}
-      <a class="btn btn-outline-secondary my-2 my-sm-0" role="button" href="{% url 'art-detail' art.art.pk %}">Szczegóły Street Artu</a></li>
+      <br>
+      <a href="{% url 'art-detail' art.art.pk %}" class="btn btn-secondary btn-lg btn-sm active" role="button">Szczegóły Street Artu</a>
   </li>
   {% endfor %}
 </ul>

@@ -18,12 +18,11 @@
     <br>
     <span class="text-info">Opis: </span><span>{{ art.description }}</span>
     <br>
-
     {% if not reviews %}
         <hr>
         <h3>Napisz pierwszą recenzję.</h3>
     {% else %}
-        <span class="text-info">Ocena ogólna: </span><span class="badge badge-primary badge-pill">{{ book_rating }}</span>
+        <span class="text-info">Ocena ogólna: </span><span class="badge badge-primary badge-pill">{{ art_rating }}</span>
         <br>
         <hr>
         <h1>Recenzje</h1>
@@ -40,8 +39,12 @@
                     <br>
                     <span class="text-info">Twórca: </span><span>{{ review.creator.username }}</span>
                     <br>
+                    <a href="{% url 'review-edit' art.pk review.pk %}" class="btn btn-secondary btn-lg btn-sm active" role="button">Edytuj recenzję</a>
+                    <br>
                 </li>
             {% endfor %}
         </ul>
     {% endif %}
+    <br>
+    <a href="{% url 'review-create' art.pk %}" class="btn btn-secondary btn-lg btn-sm active" role="button">Dodaj recenzję</a>
 {% endblock %}

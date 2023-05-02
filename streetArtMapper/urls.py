@@ -18,11 +18,14 @@ from django.contrib import admin
 from django.urls import path
 from artbase.views import HomeView, StreetArtDetailView, StreetArtListView
 from artbase.views import StreetArtSearchView
+from artbase.views import CreateReviewView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', HomeView.as_view(), name='home'),
-    path('streetart/<int:pk>/', StreetArtDetailView.as_view(), name='art-detail'),
+    path('streetart/<int:art_pk>/', StreetArtDetailView.as_view(), name='art-detail'),
     path('streetart/list/', StreetArtListView.as_view(), name='art-list'),
     path('streetart/search/', StreetArtSearchView.as_view(), name='art-search'),
+    path('streetart/<int:art_pk>/review/new/', CreateReviewView.as_view(), name='review-create'),
+    path('streetart/<int:art_pk>/reviews/<int:review_pk>/', CreateReviewView.as_view, name='review-edit'),
 ]

@@ -1,10 +1,13 @@
 from django.db.models import Avg
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib import messages
 from django.views import View
+from django.utils import timezone
 
 import folium
-from artbase.models import StreetArt, Category
-from artbase.forms import SearchForm
+
+from artbase.models import StreetArt, Category, Review
+from artbase.forms import SearchForm, ReviewForm
 
 
 class HomeView(View):
@@ -67,8 +70,8 @@ class StreetArtListView(View):
 
 
 class StreetArtDetailView(View):
-    def get(self, request, pk):
-        art = get_object_or_404(StreetArt, pk=pk)
+    def get(self, request, art_pk):
+        art = get_object_or_404(StreetArt, pk=art_pk)
         reviews = art.review_set.all()
         if reviews:
             art_rating = reviews.aggregate(Avg("rating"))
@@ -92,34 +95,105 @@ class StreetArtSearchView(View):
 
     def get(self, request, *args, **kwargs):
         context = {
-            "form": self.form_class(initial={"search": request.GET.get("search", ""), "search_in": "location__city"}),
+            "form": self.form_class(initial={
+                "search": request.GET.get("search", ""),
+                "search_in": "location__city"
+            }),
         }
         return render(request, self.template_name, context)
 
     def post(self, request, *args, **kwargs):
         search_text = request.POST.get("search", "")
         form = self.form_class(request.POST)
-        arts = set()
         context = {"form": form}
 
         if form.is_valid() and form.cleaned_data["search"]:
             search = form.cleaned_data["search"]
-            search_in = form.cleaned_data.get("search_in") or "title"
-            if search_in == "title":
-                arts = StreetArt.objects.filter(title__icontains=search)
-            elif search_in == "location__city":
-                arts = StreetArt.objects.filter(location__city__icontains=search)
-            elif search_in == "category__type":
-                if search.lower() == "mural":
-                    arts = StreetArt.objects.filter(category__type=Category.ArtworkType.MURAL)
-                elif search.lower() == "instalacja":
-                    arts = StreetArt.objects.filter(category__type=Category.ArtworkType.INSTALACJA)
-                elif search.lower() == "graffiti":
-                    arts = StreetArt.objects.filter(category__type=Category.ArtworkType.GRAFFITI)
-                elif search.lower() == "neon":
-                    arts = StreetArt.objects.filter(category__type=Category.ArtworkType.NEON)
+            search_in = form.cleaned_data.get("search_in") or "category__type"
 
-            context["search_text"] = search_text
-            context["arts"] = arts
+            if search_in == "category__type":
+                category_map = {
+                    "mural": Category.ArtworkType.MURAL,
+                    "instalacja": Category.ArtworkType.INSTALACJA,
+                    "graffiti": Category.ArtworkType.GRAFFITI,
+                    "neon": Category.ArtworkType.NEON,
+                }
+                art_type = category_map.get(search.lower())
+                if art_type:
+                    arts = StreetArt.objects.filter(category__type=art_type)
+                else:
+                    arts = []
+            else:
+                filter_kwargs = {f"{search_in}__icontains": search}
+                arts = StreetArt.objects.filter(**filter_kwargs)
 
+        else:
+            return render(request, self.template_name, {"form": form})
+
+        context["search_text"] = search_text
+        context["arts"] = arts
+        return render(request, self.template_name, context)
+
+
+class CreateReviewView(View):
+    template_name = "artbase/create_update_review.html"
+    form_class = ReviewForm
+
+    def get(self, request, *args, **kwargs):
+        art_pk = kwargs["art_pk"]
+        review_pk = kwargs.get('review_pk')
+        art = get_object_or_404(StreetArt, pk=art_pk)
+
+        if review_pk is not None:
+            review = get_object_or_404(Review, streetart_id=art_pk, pk=review_pk)
+        else:
+            review = None
+
+        form = self.form_class(instance=review)
+        context = {
+            "form": form,
+            "instance": review,
+            "model": "Review",
+            "related_instance": art,
+            "related_model": "StreetArt"
+        }
+        return render(request, self.template_name, context)
+
+    def post(self, request, *args, **kwargs):
+        art_pk = kwargs["art_pk"]
+        review_pk = kwargs.get('review_pk')
+        art = get_object_or_404(StreetArt, pk=art_pk)
+
+        if review_pk is not None:
+            # Create a form to edit an existing Review, but use
+            # POST data to populate the form.
+            review = get_object_or_404(Review, streetart_id=art_pk, pk=review_pk)
+            form = self.form_class(request.POST, instance=review)
+        else:
+            form = self.form_class(request.POST)
+
+        # save new review or update old review
+        if form.is_valid():
+            # Create, but don't save the new review instance.
+            updated_review = form.save(commit=False)
+            # Modify revew in some way.
+            updated_review.art = art
+            updated_review.creator = request.user
+
+            if review_pk is None:
+                messages.success(request, "Utworzono recenzję dla \"{}\".".format(art))
+            else:
+                # updated_review.date_edited = timezone.now()
+                messages.success(request, "Uaktualniono recenzję dla \"{}\".".format(art))
+            # Save the new instance.
+            updated_review.save()
+            return redirect("art-detail", art.pk)
+
+        context = {
+            "form": form,
+            "instance": review,
+            "model": "Review",
+            "related_instance": art,
+            "related_model": "StreetArt"
+        }
         return render(request, self.template_name, context)

@@ -42,9 +42,9 @@ class Location(models.Model):
 
 
 class Review(models.Model):
-    content = models.TextField(help_text="Tekst recenzji.")
-    rating = models.IntegerField(help_text="Ocena użytkownika.")
-    date_created = models.DateTimeField(auto_now_add=True, help_text="Data i czas utworzenia recenzji.")
-    date_edited = models.DateTimeField(null=True, help_text="Data i czas ostatniej edycji recenzji.")
+    content = models.TextField()
+    rating = models.IntegerField()
+    date_created = models.DateTimeField(auto_now_add=True)
+    date_edited = models.DateTimeField(auto_now=True)
     creator = models.ForeignKey(User, on_delete=models.CASCADE)
-    art = models.ForeignKey(StreetArt, on_delete=models.CASCADE, help_text="Recenzowany streetart.")
+    art = models.ForeignKey(StreetArt, on_delete=models.CASCADE)
