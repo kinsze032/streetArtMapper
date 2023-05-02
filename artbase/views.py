@@ -93,42 +93,48 @@ class StreetArtSearchView(View):
     template_name = "artbase/search-results.html"
     form_class = SearchForm
 
+    def get_arts_queryset(self, search_text, search_in):
+        if search_in == "category__type":
+            category_map = {
+                "mural": Category.ArtworkType.MURAL,
+                "instalacja": Category.ArtworkType.INSTALACJA,
+                "graffiti": Category.ArtworkType.GRAFFITI,
+                "neon": Category.ArtworkType.NEON,
+            }
+            art_type = category_map.get(search_text.lower())
+            if art_type:
+                return StreetArt.objects.filter(category__type=art_type)
+            else:
+                return StreetArt.objects.none()
+        else:
+            filter_kwargs = {f"{search_in}__icontains": search_text}
+            return StreetArt.objects.filter(**filter_kwargs)
+
     def get(self, request, *args, **kwargs):
+        form = self.form_class(request.GET)
+        search_text = request.GET.get("search")
+        search_in = request.GET.get("search_in", "category__type")
+
         context = {
-            "form": self.form_class(initial={
-                "search": request.GET.get("search", ""),
-                "search_in": "location__city"
-            }),
+            "form": form,
+            "search_text": search_text,
+            "arts": self.get_arts_queryset(search_text, search_in)
+            if search_text
+            else StreetArt.objects.none(),
         }
+
         return render(request, self.template_name, context)
 
     def post(self, request, *args, **kwargs):
-        search_text = request.POST.get("search", "")
         form = self.form_class(request.POST)
         context = {"form": form}
+        search_text = ""
+        arts = StreetArt.objects.none()
 
         if form.is_valid() and form.cleaned_data["search"]:
-            search = form.cleaned_data["search"]
+            search_text = form.cleaned_data["search"]
             search_in = form.cleaned_data.get("search_in") or "category__type"
-
-            if search_in == "category__type":
-                category_map = {
-                    "mural": Category.ArtworkType.MURAL,
-                    "instalacja": Category.ArtworkType.INSTALACJA,
-                    "graffiti": Category.ArtworkType.GRAFFITI,
-                    "neon": Category.ArtworkType.NEON,
-                }
-                art_type = category_map.get(search.lower())
-                if art_type:
-                    arts = StreetArt.objects.filter(category__type=art_type)
-                else:
-                    arts = []
-            else:
-                filter_kwargs = {f"{search_in}__icontains": search}
-                arts = StreetArt.objects.filter(**filter_kwargs)
-
-        else:
-            return render(request, self.template_name, {"form": form})
+            arts = self.get_arts_queryset(search_text, search_in)
 
         context["search_text"] = search_text
         context["arts"] = arts
@@ -141,7 +147,7 @@ class CreateReviewView(View):
 
     def get(self, request, *args, **kwargs):
         art_pk = kwargs["art_pk"]
-        review_pk = kwargs.get('review_pk')
+        review_pk = kwargs.get("review_pk")
         art = get_object_or_404(StreetArt, pk=art_pk)
 
         if review_pk is not None:
@@ -155,13 +161,13 @@ class CreateReviewView(View):
             "instance": review,
             "model": "Review",
             "related_instance": art,
-            "related_model": "StreetArt"
+            "related_model": "StreetArt",
         }
         return render(request, self.template_name, context)
 
     def post(self, request, *args, **kwargs):
         art_pk = kwargs["art_pk"]
-        review_pk = kwargs.get('review_pk')
+        review_pk = kwargs.get("review_pk")
         art = get_object_or_404(StreetArt, pk=art_pk)
 
         if review_pk is not None:
@@ -181,10 +187,10 @@ class CreateReviewView(View):
             updated_review.creator = request.user
 
             if review_pk is None:
-                messages.success(request, "Utworzono recenzję dla \"{}\".".format(art))
+                messages.success(request, 'Utworzono recenzję dla "{}".'.format(art))
             else:
                 # updated_review.date_edited = timezone.now()
-                messages.success(request, "Uaktualniono recenzję dla \"{}\".".format(art))
+                messages.success(request, 'Uaktualniono recenzję dla "{}".'.format(art))
             # Save the new instance.
             updated_review.save()
             return redirect("art-detail", art.pk)
@@ -194,6 +200,6 @@ class CreateReviewView(View):
             "instance": review,
             "model": "Review",
             "related_instance": art,
-            "related_model": "StreetArt"
+            "related_model": "StreetArt",
         }
         return render(request, self.template_name, context)
