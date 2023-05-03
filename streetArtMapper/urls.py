@@ -34,6 +34,6 @@ urlpatterns = [
     path('streetart/<int:art_pk>/review/new/', CreateReviewView.as_view(), name='review-create'),
     path('streetart/<int:art_pk>/reviews/<int:review_pk>/', CreateReviewView.as_view, name='review-edit'),
     path('streetart/new/', CreateStreetArtView.as_view(), name='art-create'),
-    path('get-art-location/', get_art_location)
+    path('get-art-location/', get_art_location, name='get-art-location'),
 ]
 
