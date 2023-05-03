@@ -1,6 +1,6 @@
 from django import forms
 from django.utils.translation import gettext_lazy as _
-from .models import Review
+from .models import Review, StreetArt
 
 
 class SearchForm(forms.Form):
@@ -28,3 +28,18 @@ class ReviewForm(forms.ModelForm):
         }
 
     rating = forms.IntegerField(min_value=0, max_value=5)
+
+
+class StreetArtForm(forms.ModelForm):
+    class Meta:
+        model = StreetArt
+        fields = ['title', 'artist', 'year', 'description', 'category']
+        labels = {
+            'title': _("Tytuł"),
+            'artist': _("Artysta"),
+            'year': _("Rok utworzenia"),
+            'description': _("Opis"),
+            'category': _("Kategoria"),
+        }
+
+    year = forms.IntegerField(min_value=2000, max_value=2999)

@@ -1,14 +1,15 @@
-from django.db.models import Avg
-from django.shortcuts import render, get_object_or_404, redirect
+import folium
+from geopy.geocoders import Nominatim
+
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.db.models import Avg
+from django.shortcuts import render, get_object_or_404, redirect
 from django.views import View
-from django.utils import timezone
 
-import folium
-
-from artbase.models import StreetArt, Category, Review
-from artbase.forms import SearchForm, ReviewForm
+from artbase.forms import SearchForm, ReviewForm, StreetArtForm
+from artbase.models import StreetArt, Category, Review, Location
 
 
 class HomeView(View):
@@ -21,25 +22,35 @@ class HomeView(View):
         # add a marker to the map for each street art
         for art in arts:
             coordinates = (art.location.latitude, art.location.longitude)
-            popup_html = f"<a href='/streetart/{art.id}' target='_blank'>{art.title}</a>"
+            popup_html = f"<a href='/streetart/{art.id}' target='_blank'><strong>{art.title}</strong></a>"
 
             if art.category.get_type_display() == "mural":
                 folium.Marker(
-                    coordinates, popup=popup_html, icon=folium.Icon(color="red", icon="paint-brush", prefix="fa")
+                    coordinates,
+                    popup=popup_html,
+                    icon=folium.Icon(color="red", icon="paint-brush", prefix="fa"),
+                    tooltip="Kliknij po więcej informacji",
                 ).add_to(map)
             if art.category.get_type_display() == "neon":
                 folium.Marker(
-                    coordinates, popup=popup_html, icon=folium.Icon(color="blue", icon="lightbulb", prefix="fa")
+                    coordinates,
+                    popup=popup_html,
+                    icon=folium.Icon(color="blue", icon="lightbulb", prefix="fa"),
+                    tooltip="Kliknij po więcej informacji",
                 ).add_to(map)
             if art.category.get_type_display() == "graffiti":
                 folium.Marker(
-                    coordinates, popup=popup_html, icon=folium.Icon(color="green", icon="eyedropper", prefix="fa")
+                    coordinates,
+                    popup=popup_html,
+                    icon=folium.Icon(color="green", icon="eyedropper", prefix="fa"),
+                    tooltip="Kliknij po więcej informacji",
                 ).add_to(map)
             if art.category.get_type_display() == "instalacja":
                 folium.Marker(
                     coordinates,
                     popup=popup_html,
                     icon=folium.Icon(color="darkpurple", icon="star"),
+                    tooltip="Kliknij po więcej informacji",
                 ).add_to(map)
 
         context = {"map": map._repr_html_()}
@@ -144,7 +155,9 @@ class StreetArtSearchView(View):
         return render(request, self.template_name, context)
 
 
-class CreateReviewView(View):
+class CreateReviewView(LoginRequiredMixin, View):
+    login_url = "/accounts/login/"
+    permission_required = "auth.group"
     template_name = "artbase/create_update_review.html"
     form_class = ReviewForm
 
@@ -208,6 +221,55 @@ class CreateReviewView(View):
         return render(request, self.template_name, context)
 
 
-@login_required
+@login_required(login_url="/accounts/login/")
 def profile(request):
-    return render(request, 'artbase/profile.html')
+    return render(request, "artbase/profile.html")
+
+
+def get_art_location(request):
+    latitude = request.GET.get('latitude')
+    longitude = request.GET.get('longitude')
+    user_location = latitude, longitude
+    geolocator = Nominatim(user_agent="artbase")  # create an object of class Nominatim
+    location = geolocator.reverse(user_location)  # give the coordinates
+    try:
+        city = location.raw['address']['city']  # extract the city name from the result using the JSON object key
+    except KeyError:
+        return {"error": "Nie można znaleźć nazwy miasta dla podanych współrzędnych geograficznych."}
+    context = {
+        "city": city,
+        "longitude": longitude,
+        "latitude": latitude,
+
+    }
+    return context
+
+
+class CreateStreetArtView(View):
+    template_name = "artbase/create_update_streetart.html"
+    form_class = StreetArtForm
+
+    def get(self, request, *args, **kwargs):
+        context = {
+            "form": self.form_class(),
+        }
+        context.update(get_art_location(request))
+        return render(request, self.template_name, context)
+
+    def post(self, request, *args, **kwargs):
+        form = self.form_class(request.POST)
+        if form.is_valid():
+            streetart = form.save(commit=False)
+            streetart.location = Location.objects.create(
+                city=form.cleaned_data['city'],
+                longitude=form.cleaned_data['longitude'],
+                latitude=form.cleaned_data['latitude']
+            )
+            streetart.save()
+            return redirect('streetart_detail', pk=streetart.pk)
+        else:
+            context = {
+                "form": form,
+            }
+            context.update(get_art_location(request))
+            return render(request, self.template_name, context)
