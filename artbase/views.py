@@ -240,7 +240,6 @@ def get_art_location(request):
         "city": city,
         "longitude": longitude,
         "latitude": latitude,
-
     }
     return context
 
@@ -252,24 +251,71 @@ class CreateStreetArtView(View):
     def get(self, request, *args, **kwargs):
         context = {
             "form": self.form_class(),
+            "instance": None,
+            "model": "StreetArt",
         }
         context.update(get_art_location(request))
+        print(context[''])
+        print(context['city'])
         return render(request, self.template_name, context)
 
     def post(self, request, *args, **kwargs):
         form = self.form_class(request.POST)
+
         if form.is_valid():
             streetart = form.save(commit=False)
+
             streetart.location = Location.objects.create(
-                city=form.cleaned_data['city'],
-                longitude=form.cleaned_data['longitude'],
-                latitude=form.cleaned_data['latitude']
+                city=request.POST.get('city'),
+                longitude=request.POST.get('longitude'),
+                latitude=request.POST.get('latitude')
             )
             streetart.save()
-            return redirect('streetart_detail', pk=streetart.pk)
+            return redirect('art_detail', art_pk=streetart.pk)
         else:
             context = {
                 "form": form,
+                "instance": StreetArt,
+                "model": "StreetArt",
             }
             context.update(get_art_location(request))
             return render(request, self.template_name, context)
+
+
+class EditStreetArtView(View):
+    template_name = "artbase/create_update_streetart.html"
+    form_class = StreetArtForm
+
+    def get(self, request, *args, **kwargs):
+        art_pk = kwargs.get("art_pk")
+        art = get_object_or_404(StreetArt, pk=art_pk)
+        context = {
+            "form": self.form_class(instance=art),
+            "instance": art,
+            "model": "StreetArt",
+        }
+        return render(request, self.template_name, context)
+
+    def post(self, request, *args, **kwargs):
+        art_pk = kwargs["art_pk"]
+        art = get_object_or_404(StreetArt, pk=art_pk)
+
+        form = self.form_class(request.POST, instance=art)
+
+        if form.is_valid():
+            streetart = form.save(commit=False)
+            streetart.save()
+            return redirect('art-detail', art_pk=art.pk)
+        else:
+            context = {
+                "form": form,
+                "instance": art,
+                "model": "StreetArt",
+            }
+            context.update(get_art_location(request))
+            return render(request, self.template_name, context)
+
+
+class ReportArtView(View):
+    def get(self, request):
+        return render(request, 'artbase/report_art.html')

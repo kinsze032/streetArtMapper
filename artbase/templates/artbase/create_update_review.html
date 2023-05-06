@@ -1,5 +1,7 @@
 {% extends "artbase/main.html" %}
-
+{% block title %}
+{{ page_title|default:'Recenzja' }}
+{% endblock title %}
 {% block content %}
     <br>
     <div class="alert alert-info" role="alert" style="width: 99%">

@@ -1,12 +1,14 @@
 {% extends "artbase/main.html" %}
-
+{% block title %}
+{{ page_title|default:'StreetArt' }}
+{% endblock title %}
 {% block content %}
 <br>
 <div class="alert alert-info" role="alert" style="width: 99%">
 {% if instance %}
-    <span style="color:mediumslateblue;font-weight:bold;font-size:large">Edycja</span> {{ model }}
+    <span style="color:mediumslateblue;font-weight:bold;font-size:large">Edycja </span>{{ model }}
 {% else %}
-    <span style="color:mediumslateblue;font-weight:bold;font-size:large">Nowy</span> {{ model }}
+    <span style="color:mediumslateblue;font-weight:bold;font-size:large">Nowy </span>{{ model }}
 {% endif %}
 </div>
 <table>
@@ -34,33 +36,48 @@
                 {{ form.category.label_tag }}
                 {{ form.category }}
             </div>
-            <button class="btn btn-secondary btn-sm" type="submit">{% if instance %}Zapisz{% else %}Utwórz{% endif %} StreetArt</button>
+
+{#              #}
+            {% if form.instance.location %}
+                <button class="btn btn-secondary btn-sm" type="submit">Zapisz StreetArt</button>
+            {% else %}
+                <button class="btn btn-secondary btn-sm" type="submit">Utwórz StreetArt</button>
+            {% endif %}
+{#            <button class="btn btn-secondary btn-sm" type="submit">{% if instance %}Zapisz{% else %}Utwórz{% endif %} StreetArt</button>#}
         </form>
         </th>
-        <th>
-         <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css"
-         integrity="sha256-kLaT2GOSpHechhsozzB+flnD+zUyjE2LlfWPgU04xyI="
-         crossorigin=""/>
-        <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"
-        integrity="sha256-WBkoXOwTeyKclOHuWtc+i2uENFpDZ9YPdf5Hf+D7ewM="
-        crossorigin="">
-        </script>
-        <div id="map" style="height: 500px; width: 500px"></div>
-            <script>
-            let map = L.map('map').setView([50.264403, 19.023606], 13);
-            L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            maxZoom: 19,
-            attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-        }).addTo(map);
-            map.on('click', (event) => {
-                let latitude = event.latlng.lat
-                let longitude = event.latlng.lng
-                L.marker([latitude, longitude]).addTo(map);
-                fetch(`/get-art-location?latitude=${latitude}&longitude=${longitude}`)
-            })
+        {% if not form.instance.location %}
+            <th>
+                <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css"
+                 integrity="sha256-kLaT2GOSpHechhsozzB+flnD+zUyjE2LlfWPgU04xyI="
+                 crossorigin=""/>
+                <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"
+                integrity="sha256-WBkoXOwTeyKclOHuWtc+i2uENFpDZ9YPdf5Hf+D7ewM="
+                crossorigin="">
+                </script>
+                <div id="map" style="height: 500px; width: 500px"></div>
+                    <script>
+                    let map = L.map('map').setView([50.264403, 19.023606], 13);
+                    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    maxZoom: 19,
+                    attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                }).addTo(map);
 
-        </script>
-        </th>
+                let marker = null;
+
+                map.on('click', (event) => {
+                    if (marker) {
+                        marker.remove();
+                    }
+                    let latitude = event.latlng.lat
+                    let longitude = event.latlng.lng
+                    marker = L.marker([latitude, longitude]).addTo(map);
+                    fetch(`/get-art-location?latitude=${latitude}&longitude=${longitude}`)
+                })
+
+                </script>
+            </th>
+        {% endif %}
     </tr>
 </table>
 {% endblock %}

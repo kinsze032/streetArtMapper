@@ -18,6 +18,9 @@
     <br>
     <span class="text-info">Opis: </span><span>{{ art.description }}</span>
     <br>
+    <br>
+    <a href="{% url 'art-edit' art.pk %}" class="btn btn-secondary btn-lg btn-sm active" role="button">Edytuj StreetArt</a>
+    <br>
     {% if not reviews %}
         <hr>
         <h3>Napisz pierwszą recenzję.</h3>

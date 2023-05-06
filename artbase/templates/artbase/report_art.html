@@ -1,0 +1,34 @@
+{% extends "artbase/main.html" %}
+{% load static %}
+{% block title %}
+    {{ page_title|default:'Zgłoś StreetArt' }}
+{% endblock title %}
+<br>
+{% block content %}
+<div class="art-container">
+    <div class="art-image">
+        <img src="{% static 'artbase/tiny_cat.jpg' %}" width="500px" alt="kot">
+    </div>
+    <div class="art-text">
+        <h1>ZGŁOŚ MURAL</h1>
+        <p>Znalazłeś streetart? Nie wahaj się, wyślij jego lokalizację (najlepiej link do mapy Google) z opisem jak dokładnie można go znaleźć, wraz ze zdjęciem w najwyższej możliwej rozdzielczości. Aby to zrobić, wyślij maila na poniższy adres.</p>
+        <p><strong>NASZ EMAIL:</strong> streetart@streetart.pl</p>
+    </div>
+</div>
+
+
+<style>
+.art-container {
+  display: flex;
+  align-items: center;
+}
+
+.art-image {
+  margin-right: 20px;
+}
+
+.art-text {
+  flex: 1;
+}
+</style>
+{% endblock %}
