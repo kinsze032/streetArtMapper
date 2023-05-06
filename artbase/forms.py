@@ -41,5 +41,11 @@ class StreetArtForm(forms.ModelForm):
             'description': _("Opis"),
             'category': _("Kategoria"),
         }
+        widgets = {
+            'longitude': forms.HiddenInput(),
+            'latitude': forms.HiddenInput(),
+        }
 
     year = forms.IntegerField(min_value=2000, max_value=2999)
+    longitude = forms.DecimalField(widget=forms.HiddenInput())
+    latitude = forms.DecimalField(widget=forms.HiddenInput())

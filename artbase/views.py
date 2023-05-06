@@ -1,13 +1,12 @@
 import folium
 from geopy.geocoders import Nominatim
-
+from django.http import JsonResponse
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Avg
 from django.shortcuts import render, get_object_or_404, redirect
 from django.views import View
-
 from artbase.forms import SearchForm, ReviewForm, StreetArtForm
 from artbase.models import StreetArt, Category, Review, Location
 
@@ -200,7 +199,6 @@ class CreateReviewView(LoginRequiredMixin, View):
             updated_review = form.save(commit=False)
             # Modify revew in some way.
             updated_review.art = art
-            updated_review.creator = request.user
 
             if review_pk is None:
                 messages.success(request, 'Utworzono recenzję dla "{}".'.format(art))
@@ -226,22 +224,23 @@ def profile(request):
     return render(request, "artbase/profile.html")
 
 
-def get_art_location(request):
-    latitude = request.GET.get('latitude')
-    longitude = request.GET.get('longitude')
-    user_location = latitude, longitude
-    geolocator = Nominatim(user_agent="artbase")  # create an object of class Nominatim
-    location = geolocator.reverse(user_location)  # give the coordinates
-    try:
-        city = location.raw['address']['city']  # extract the city name from the result using the JSON object key
-    except KeyError:
-        return {"error": "Nie można znaleźć nazwy miasta dla podanych współrzędnych geograficznych."}
-    context = {
-        "city": city,
-        "longitude": longitude,
-        "latitude": latitude,
-    }
-    return context
+# def get_art_location(request):
+#     latitude = request.GET.get('latitude')
+#     longitude = request.GET.get('longitude')
+#     user_location = latitude, longitude
+#     geolocator = Nominatim(user_agent="artbase")  # create an object of class Nominatim
+#     location = geolocator.reverse(user_location)  # give the coordinates
+#     try:
+#         city = location.raw['address']['city']  # extract the city name from the result using the JSON object key
+#     except KeyError:
+#         return {"error": "Nie można znaleźć nazwy miasta dla podanych współrzędnych geograficznych."}
+#     # context = {
+#     #     "city": city,
+#     #     "longitude": longitude,
+#     #     "latitude": latitude,
+#     # }
+#     print(latitude, longitude, city)
+#     return JsonResponse({})
 
 
 class CreateStreetArtView(View):
@@ -254,9 +253,6 @@ class CreateStreetArtView(View):
             "instance": None,
             "model": "StreetArt",
         }
-        context.update(get_art_location(request))
-        print(context[''])
-        print(context['city'])
         return render(request, self.template_name, context)
 
     def post(self, request, *args, **kwargs):
@@ -264,25 +260,33 @@ class CreateStreetArtView(View):
 
         if form.is_valid():
             streetart = form.save(commit=False)
+            longitude = form.cleaned_data['longitude']
+            latitude = form.cleaned_data['latitude']
+            user_location = (f"{latitude}, {longitude}")
+            geolocator = Nominatim(user_agent="artbase")  # create an object of class Nominatim
+            location = geolocator.reverse(user_location, exactly_one=True)  # give the coordinates
 
+            city = location.raw['address']['city']  # extract the city name from the result using the JSON object key
             streetart.location = Location.objects.create(
-                city=request.POST.get('city'),
-                longitude=request.POST.get('longitude'),
-                latitude=request.POST.get('latitude')
+                city=city,
+                longitude=longitude,
+                latitude=latitude,
             )
             streetart.save()
-            return redirect('art_detail', art_pk=streetart.pk)
+            messages.success(request, "StreetArt został pomyślnie dodany!")
+            return redirect('art-detail', art_pk=streetart.pk)
         else:
             context = {
                 "form": form,
                 "instance": StreetArt,
                 "model": "StreetArt",
             }
-            context.update(get_art_location(request))
             return render(request, self.template_name, context)
 
 
-class EditStreetArtView(View):
+class EditStreetArtView(LoginRequiredMixin, View):
+    login_url = "/accounts/login/"
+    permission_required = "auth.group"
     template_name = "artbase/create_update_streetart.html"
     form_class = StreetArtForm
 
@@ -303,8 +307,7 @@ class EditStreetArtView(View):
         form = self.form_class(request.POST, instance=art)
 
         if form.is_valid():
-            streetart = form.save(commit=False)
-            streetart.save()
+            form.save()
             return redirect('art-detail', art_pk=art.pk)
         else:
             context = {
@@ -312,7 +315,6 @@ class EditStreetArtView(View):
                 "instance": art,
                 "model": "StreetArt",
             }
-            context.update(get_art_location(request))
             return render(request, self.template_name, context)
 
 
