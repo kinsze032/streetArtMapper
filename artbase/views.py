@@ -63,7 +63,7 @@ class StreetArtListView(View):
         for art in street_arts:
             reviews = art.review_set.all()
             if reviews:
-                art_rating = reviews.aggregate(Avg("rating"))
+                art_rating = reviews.aggregate(Avg("rating"))['rating__avg']
                 number_of_reviews = len(reviews)
             else:
                 art_rating = None
@@ -85,7 +85,7 @@ class StreetArtDetailView(View):
         art = get_object_or_404(StreetArt, pk=art_pk)
         reviews = art.review_set.all()
         if reviews:
-            art_rating = reviews.aggregate(Avg("rating"))
+            art_rating = reviews.aggregate(Avg("rating"))['rating__avg']
             context = {
                 "art": art,
                 "art_rating": art_rating,
@@ -180,7 +180,7 @@ class CreateReviewView(LoginRequiredMixin, View):
         art = get_object_or_404(StreetArt, pk=art_pk)
 
         if review_pk is not None:
-            review = get_object_or_404(Review, streetart_id=art_pk, pk=review_pk)
+            review = get_object_or_404(Review, art_id=art_pk, pk=review_pk)
         else:
             review = None
 
@@ -202,7 +202,7 @@ class CreateReviewView(LoginRequiredMixin, View):
         if review_pk is not None:
             # Create a form to edit an existing Review, but use
             # POST data to populate the form.
-            review = get_object_or_404(Review, streetart_id=art_pk, pk=review_pk)
+            review = get_object_or_404(Review, art_id=art_pk, pk=review_pk)
             form = self.form_class(request.POST, instance=review)
         else:
             form = self.form_class(request.POST)
@@ -213,6 +213,7 @@ class CreateReviewView(LoginRequiredMixin, View):
             updated_review = form.save(commit=False)
             # Modify revew in some way.
             updated_review.art = art
+            updated_review.creator = request.user
 
             if review_pk is None:
                 messages.success(request, 'Utworzono recenzję dla "{}".'.format(art))
@@ -237,8 +238,9 @@ def profile(request):
     return render(request, "artbase/profile.html")
 
 
-
-class CreateStreetArtView(View):
+class CreateStreetArtView(LoginRequiredMixin, View):
+    login_url = "/accounts/login/"
+    permission_required = "auth.group"
     template_name = "artbase/create_update_streetart.html"
     form_class = StreetArtForm
 
@@ -254,22 +256,22 @@ class CreateStreetArtView(View):
         form = self.form_class(request.POST)
 
         if form.is_valid():
-            streetart = form.save(commit=False)
+            art = form.save(commit=False)
             longitude = form.cleaned_data['longitude']
             latitude = form.cleaned_data['latitude']
-            user_location = (f"{latitude}, {longitude}")
+            user_location = f"{latitude}, {longitude}"
             geolocator = Nominatim(user_agent="artbase")  # create an object of class Nominatim
             location = geolocator.reverse(user_location, exactly_one=True)  # give the coordinates
 
             city = location.raw['address']['city']  # extract the city name from the result using the JSON object key
-            streetart.location = Location.objects.create(
+            art.location = Location.objects.create(
                 city=city,
                 longitude=longitude,
                 latitude=latitude,
             )
-            streetart.save()
+            art.save()
             messages.success(request, "StreetArt został pomyślnie dodany!")
-            return redirect('art-detail', art_pk=streetart.pk)
+            return redirect('art-detail', art_pk=art.pk)
         else:
             context = {
                 "form": form,
@@ -314,5 +316,7 @@ class EditStreetArtView(LoginRequiredMixin, View):
 
 
 class ReportArtView(View):
+    template_name = 'artbase/report_art.html'
+
     def get(self, request):
-        return render(request, 'artbase/report_art.html')
+        return render(request, self.template_name)
