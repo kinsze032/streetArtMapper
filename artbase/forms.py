@@ -30,7 +30,44 @@ class ReviewForm(forms.ModelForm):
     rating = forms.IntegerField(min_value=0, max_value=5)
 
 
-class CreateStreetArtForm(forms.ModelForm):
+# class CreateStreetArtForm(forms.ModelForm):
+#     class Meta:
+#         model = StreetArt
+#         fields = ['title', 'artist', 'year', 'description', 'category']
+#         labels = {
+#             'title': _("Tytuł"),
+#             'artist': _("Artysta"),
+#             'year': _("Rok utworzenia"),
+#             'description': _("Opis"),
+#             'category': _("Kategoria"),
+#         }
+#         widgets = {
+#             'longitude': forms.HiddenInput(),
+#             'latitude': forms.HiddenInput(),
+#         }
+#
+#     year = forms.IntegerField(min_value=2000, max_value=2999)
+#     longitude = forms.DecimalField(widget=forms.HiddenInput())
+#     latitude = forms.DecimalField(widget=forms.HiddenInput())
+#
+#
+# class EditStreetArtForm(forms.ModelForm):
+#     class Meta:
+#         model = StreetArt
+#         fields = ['title', 'artist', 'year', 'description', 'category']
+#         labels = {
+#             'title': _("Tytuł"),
+#             'artist': _("Artysta"),
+#             'year': _("Rok utworzenia"),
+#             'description': _("Opis"),
+#             'category': _("Kategoria"),
+#         }
+#
+#     year = forms.IntegerField(min_value=2000, max_value=2999)
+
+#PONIŻEJ SKRÓCONA WERSJA POWYŻSZYCH DWÓCH KLAS
+
+class StreetArtFormBase(forms.ModelForm):
     class Meta:
         model = StreetArt
         fields = ['title', 'artist', 'year', 'description', 'category']
@@ -41,28 +78,22 @@ class CreateStreetArtForm(forms.ModelForm):
             'description': _("Opis"),
             'category': _("Kategoria"),
         }
+
+    year = forms.IntegerField(min_value=2000, max_value=2999)
+
+
+class CreateStreetArtForm(StreetArtFormBase):
+    class Meta(StreetArtFormBase.Meta):
         widgets = {
             'longitude': forms.HiddenInput(),
             'latitude': forms.HiddenInput(),
         }
 
-    year = forms.IntegerField(min_value=2000, max_value=2999)
     longitude = forms.DecimalField(widget=forms.HiddenInput())
     latitude = forms.DecimalField(widget=forms.HiddenInput())
 
 
-class EditStreetArtForm(forms.ModelForm):
-    class Meta:
-        model = StreetArt
-        fields = ['title', 'artist', 'year', 'description', 'category']
-        labels = {
-            'title': _("Tytuł"),
-            'artist': _("Artysta"),
-            'year': _("Rok utworzenia"),
-            'description': _("Opis"),
-            'category': _("Kategoria"),
-        }
-
-    year = forms.IntegerField(min_value=2000, max_value=2999)
+class EditStreetArtForm(StreetArtFormBase):
+    pass
 
 
