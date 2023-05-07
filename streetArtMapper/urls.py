@@ -20,7 +20,6 @@ from artbase.views import HomeView, StreetArtDetailView, StreetArtListView
 from artbase.views import StreetArtSearchView
 from artbase.views import CreateReviewView, CreateStreetArtView, EditStreetArtView, ReportArtView
 from artbase.views import profile
-# from artbase.views import get_art_location
 
 urlpatterns = [
     path('accounts/',
@@ -35,7 +34,6 @@ urlpatterns = [
     path('streetart/<int:art_pk>/reviews/<int:review_pk>/', CreateReviewView.as_view(), name='review-edit'),
     path('streetart/new/', CreateStreetArtView.as_view(), name='art-create'),
     path('streetart/<int:art_pk>/edit/', EditStreetArtView.as_view(), name='art-edit'),
-    # path('get-art-location/', get_art_location, name='get-art-location'),
     path('streetart/zglos-streetart/', ReportArtView.as_view(), name='report-art'),
 ]
 

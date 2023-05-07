@@ -1,13 +1,12 @@
 import folium
 from geopy.geocoders import Nominatim
-from django.http import JsonResponse
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Avg
 from django.shortcuts import render, get_object_or_404, redirect
 from django.views import View
-from artbase.forms import SearchForm, ReviewForm, StreetArtForm
+from artbase.forms import SearchForm, ReviewForm, CreateStreetArtForm, EditStreetArtForm
 from artbase.models import StreetArt, Category, Review, Location
 
 
@@ -211,7 +210,7 @@ class CreateReviewView(LoginRequiredMixin, View):
         if form.is_valid():
             # Create, but don't save the new review instance.
             updated_review = form.save(commit=False)
-            # Modify revew in some way.
+            # Modify review in some way.
             updated_review.art = art
             updated_review.creator = request.user
 
@@ -242,7 +241,7 @@ class CreateStreetArtView(LoginRequiredMixin, View):
     login_url = "/accounts/login/"
     permission_required = "auth.group"
     template_name = "artbase/create_update_streetart.html"
-    form_class = StreetArtForm
+    form_class = CreateStreetArtForm
 
     def get(self, request, *args, **kwargs):
         context = {
@@ -283,9 +282,9 @@ class CreateStreetArtView(LoginRequiredMixin, View):
 
 class EditStreetArtView(LoginRequiredMixin, View):
     login_url = "/accounts/login/"
-    permission_required = "auth.group"
+    # permission_required = "auth.group"
     template_name = "artbase/create_update_streetart.html"
-    form_class = StreetArtForm
+    form_class = EditStreetArtForm
 
     def get(self, request, *args, **kwargs):
         art_pk = kwargs.get("art_pk")
@@ -305,10 +304,11 @@ class EditStreetArtView(LoginRequiredMixin, View):
 
         if form.is_valid():
             form.save()
-            return redirect('art-detail', art_pk=art.pk)
+            # messages.success(request, "StreetArt został pomyślnie zmodyfikowany!")
+            return redirect("art-detail", art.pk)
         else:
             context = {
-                "form": form,
+                "form": self.form_class(instance=art),
                 "instance": art,
                 "model": "StreetArt",
             }

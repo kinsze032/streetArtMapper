@@ -10,8 +10,9 @@
 {% else %}
     <span style="color:mediumslateblue;font-weight:bold;font-size:large">Nowy </span>{{ model }}<br>
     <span style="color:mediumslateblue;font-weight:bold;font-size:small">Nie zapomnij o przypięciu pinezki na mapie!</span>
-{% endif %}
+    <br>
 </div>
+{% endif %}
 <table>
     <tr>
         <th>
@@ -37,16 +38,15 @@
                 {{ form.category.label_tag }}
                 {{ form.category }}
             </div>
-            <div class="form-group">
-                {{ form.longitude }}
-            </div>
-            <div class="form-group">
-                {{ form.latitude }}
-            </div>
-
             {% if form.instance.location %}
                 <button class="btn btn-secondary btn-sm" type="submit">Zapisz StreetArt</button>
             {% else %}
+                <div class="form-group">
+                    {{ form.longitude }}
+                </div>
+                <div class="form-group">
+                    {{ form.latitude }}
+                </div>
                 <button class="btn btn-secondary btn-sm" type="submit">Utwórz StreetArt</button>
             {% endif %}
 
@@ -93,8 +93,6 @@
                         alert('Wybierz miejsce na mapie!');
                         return;
                     }
-
-
                     form.submit();
                 });
                 </script>

@@ -30,7 +30,7 @@ class ReviewForm(forms.ModelForm):
     rating = forms.IntegerField(min_value=0, max_value=5)
 
 
-class StreetArtForm(forms.ModelForm):
+class CreateStreetArtForm(forms.ModelForm):
     class Meta:
         model = StreetArt
         fields = ['title', 'artist', 'year', 'description', 'category']
@@ -49,3 +49,20 @@ class StreetArtForm(forms.ModelForm):
     year = forms.IntegerField(min_value=2000, max_value=2999)
     longitude = forms.DecimalField(widget=forms.HiddenInput())
     latitude = forms.DecimalField(widget=forms.HiddenInput())
+
+
+class EditStreetArtForm(forms.ModelForm):
+    class Meta:
+        model = StreetArt
+        fields = ['title', 'artist', 'year', 'description', 'category']
+        labels = {
+            'title': _("Tytuł"),
+            'artist': _("Artysta"),
+            'year': _("Rok utworzenia"),
+            'description': _("Opis"),
+            'category': _("Kategoria"),
+        }
+
+    year = forms.IntegerField(min_value=2000, max_value=2999)
+
+
