@@ -97,6 +97,20 @@ class StreetArtDetailView(View):
                 "art_rating": None,
                 "reviews": None,
             }
+
+        if request.user.is_authenticated:
+            max_viewed_arts_length = 10
+            viewed_arts = request.session.get('viewed_arts', [])
+            # aktualnie przeglądany street art
+            viewed_art = [art.id, art.title]
+            if viewed_art not in viewed_arts:
+                viewed_arts.insert(0, viewed_art)
+            else:
+                viewed_arts.remove(viewed_art)
+                viewed_arts.insert(0, viewed_art)
+            viewed_arts = viewed_arts[:max_viewed_arts_length]
+            request.session['viewed_arts'] = viewed_arts
+
         return render(request, "artbase/streetart_detail.html", context)
 
 
@@ -203,7 +217,6 @@ class CreateReviewView(LoginRequiredMixin, View):
             if review_pk is None:
                 messages.success(request, 'Utworzono recenzję dla "{}".'.format(art))
             else:
-                # updated_review.date_edited = timezone.now()
                 messages.success(request, 'Uaktualniono recenzję dla "{}".'.format(art))
             # Save the new instance.
             updated_review.save()
@@ -223,24 +236,6 @@ class CreateReviewView(LoginRequiredMixin, View):
 def profile(request):
     return render(request, "artbase/profile.html")
 
-
-# def get_art_location(request):
-#     latitude = request.GET.get('latitude')
-#     longitude = request.GET.get('longitude')
-#     user_location = latitude, longitude
-#     geolocator = Nominatim(user_agent="artbase")  # create an object of class Nominatim
-#     location = geolocator.reverse(user_location)  # give the coordinates
-#     try:
-#         city = location.raw['address']['city']  # extract the city name from the result using the JSON object key
-#     except KeyError:
-#         return {"error": "Nie można znaleźć nazwy miasta dla podanych współrzędnych geograficznych."}
-#     # context = {
-#     #     "city": city,
-#     #     "longitude": longitude,
-#     #     "latitude": latitude,
-#     # }
-#     print(latitude, longitude, city)
-#     return JsonResponse({})
 
 
 class CreateStreetArtView(View):

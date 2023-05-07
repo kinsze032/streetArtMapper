@@ -8,7 +8,8 @@
 {% if instance %}
     <span style="color:mediumslateblue;font-weight:bold;font-size:large">Edycja </span>{{ model }}
 {% else %}
-    <span style="color:mediumslateblue;font-weight:bold;font-size:large">Nowy </span>{{ model }}
+    <span style="color:mediumslateblue;font-weight:bold;font-size:large">Nowy </span>{{ model }}<br>
+    <span style="color:mediumslateblue;font-weight:bold;font-size:small">Nie zapomnij przypiąć pinezkę na mapie!</span>
 {% endif %}
 </div>
 <table>
@@ -92,6 +93,7 @@
                         alert('Wybierz miejsce na mapie!');
                         return;
                     }
+
 
                     form.submit();
                 });

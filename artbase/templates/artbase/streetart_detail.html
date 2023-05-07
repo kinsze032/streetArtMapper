@@ -19,11 +19,15 @@
     <span class="text-info">Opis: </span><span>{{ art.description }}</span>
     <br>
     <br>
-    <a href="{% url 'art-edit' art.pk %}" class="btn btn-secondary btn-lg btn-sm active" role="button">Edytuj StreetArt</a>
+    {% if user.is_authenticated %}
+        <a href="{% url 'art-edit' art.pk %}" class="btn btn-secondary btn-lg btn-sm active" role="button">Edytuj StreetArt</a>
+    {% endif %}
     <br>
     {% if not reviews %}
         <hr>
-        <h3>Napisz pierwszą recenzję.</h3>
+        {% if user.is_authenticated %}
+            <h3>Napisz pierwszą recenzję.</h3>
+        {% endif %}
     {% else %}
         <span class="text-info">Ocena ogólna: </span><span class="badge badge-primary badge-pill">{{ art_rating }}</span>
         <br>
@@ -49,5 +53,7 @@
         </ul>
     {% endif %}
     <br>
-    <a href="{% url 'review-create' art.pk %}" class="btn btn-secondary btn-lg btn-sm active" role="button">Dodaj recenzję</a>
+    {% if user.is_authenticated %}
+        <a href="{% url 'review-create' art.pk %}" class="btn btn-secondary btn-lg btn-sm active" role="button">Dodaj recenzję</a>
+    {% endif %}
 {% endblock %}
