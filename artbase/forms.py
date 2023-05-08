@@ -65,18 +65,19 @@ class ReviewForm(forms.ModelForm):
 #
 #     year = forms.IntegerField(min_value=2000, max_value=2999)
 
-#PONIŻEJ SKRÓCONA WERSJA POWYŻSZYCH DWÓCH KLAS
+# PONIŻEJ SKRÓCONA WERSJA POWYŻSZYCH DWÓCH KLAS
+
 
 class StreetArtFormBase(forms.ModelForm):
     class Meta:
         model = StreetArt
-        fields = ['title', 'artist', 'year', 'description', 'category']
+        fields = ["title", "artist", "year", "description", "category"]
         labels = {
-            'title': _("Tytuł"),
-            'artist': _("Artysta"),
-            'year': _("Rok utworzenia"),
-            'description': _("Opis"),
-            'category': _("Kategoria"),
+            "title": _("Tytuł"),
+            "artist": _("Artysta"),
+            "year": _("Rok utworzenia"),
+            "description": _("Opis"),
+            "category": _("Kategoria"),
         }
 
     year = forms.IntegerField(min_value=2000, max_value=2999)
@@ -85,8 +86,8 @@ class StreetArtFormBase(forms.ModelForm):
 class CreateStreetArtForm(StreetArtFormBase):
     class Meta(StreetArtFormBase.Meta):
         widgets = {
-            'longitude': forms.HiddenInput(),
-            'latitude': forms.HiddenInput(),
+            "longitude": forms.HiddenInput(),
+            "latitude": forms.HiddenInput(),
         }
 
     longitude = forms.DecimalField(widget=forms.HiddenInput())
@@ -97,3 +98,15 @@ class EditStreetArtForm(StreetArtFormBase):
     pass
 
 
+class LoginForm(forms.Form):
+    username = forms.CharField(
+        max_length=150,
+        widget=forms.TextInput(
+            attrs={"placeholder": "username", "style": "font-size: 13px;"}
+        ),
+    )
+    password = forms.CharField(
+        widget=forms.PasswordInput(
+            attrs={"placeholder": "password", "style": "font-size: 13px;"}
+        )
+    )

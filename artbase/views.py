@@ -1,13 +1,16 @@
 import folium
 from geopy.geocoders import Nominatim
-from django.contrib import messages
+
+from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Avg
 from django.shortcuts import render, get_object_or_404, redirect
 from django.views import View
+
 from artbase.forms import SearchForm, ReviewForm, CreateStreetArtForm, EditStreetArtForm
 from artbase.models import StreetArt, Category, Review, Location
+from artbase.forms import LoginForm
 
 
 class HomeView(View):
@@ -20,7 +23,9 @@ class HomeView(View):
         # add a marker to the map for each street art
         for art in arts:
             coordinates = (art.location.latitude, art.location.longitude)
-            popup_html = f"<a href='/streetart/{art.id}' target='_blank'><strong>{art.title}</strong></a>"
+            popup_html = (
+                f"<a href='/streetart/{art.id}' target='_blank'><strong>{art.title}</strong></a>"
+            )
 
             if art.category.get_type_display() == "mural":
                 folium.Marker(
@@ -62,7 +67,7 @@ class StreetArtListView(View):
         for art in street_arts:
             reviews = art.review_set.all()
             if reviews:
-                art_rating = reviews.aggregate(Avg("rating"))['rating__avg']
+                art_rating = reviews.aggregate(Avg("rating"))["rating__avg"]
                 number_of_reviews = len(reviews)
             else:
                 art_rating = None
@@ -84,7 +89,7 @@ class StreetArtDetailView(View):
         art = get_object_or_404(StreetArt, pk=art_pk)
         reviews = art.review_set.all()
         if reviews:
-            art_rating = reviews.aggregate(Avg("rating"))['rating__avg']
+            art_rating = reviews.aggregate(Avg("rating"))["rating__avg"]
             context = {
                 "art": art,
                 "art_rating": art_rating,
@@ -99,7 +104,7 @@ class StreetArtDetailView(View):
 
         if request.user.is_authenticated:
             max_viewed_arts_length = 10
-            viewed_arts = request.session.get('viewed_arts', [])
+            viewed_arts = request.session.get("viewed_arts", [])
             # aktualnie przeglądany street art
             viewed_art = [art.id, art.title]
             if viewed_art not in viewed_arts:
@@ -108,7 +113,7 @@ class StreetArtDetailView(View):
                 viewed_arts.remove(viewed_art)
                 viewed_arts.insert(0, viewed_art)
             viewed_arts = viewed_arts[:max_viewed_arts_length]
-            request.session['viewed_arts'] = viewed_arts
+            request.session["viewed_arts"] = viewed_arts
 
         return render(request, "artbase/streetart_detail.html", context)
 
@@ -169,7 +174,6 @@ class StreetArtSearchView(View):
 
 class CreateReviewView(LoginRequiredMixin, View):
     login_url = "/accounts/login/"
-    permission_required = "auth.group"
     template_name = "artbase/create_update_review.html"
     form_class = ReviewForm
 
@@ -211,13 +215,10 @@ class CreateReviewView(LoginRequiredMixin, View):
             # Create, but don't save the new review instance.
             updated_review = form.save(commit=False)
             # Modify review in some way.
+            updated_review.content = form.cleaned_data["content"]
+            updated_review.rating = form.cleaned_data["rating"]
             updated_review.art = art
             updated_review.creator = request.user
-
-            if review_pk is None:
-                messages.success(request, 'Utworzono recenzję dla "{}".'.format(art))
-            else:
-                messages.success(request, 'Uaktualniono recenzję dla "{}".'.format(art))
             # Save the new instance.
             updated_review.save()
             return redirect("art-detail", art.pk)
@@ -239,7 +240,6 @@ def profile(request):
 
 class CreateStreetArtView(LoginRequiredMixin, View):
     login_url = "/accounts/login/"
-    permission_required = "auth.group"
     template_name = "artbase/create_update_streetart.html"
     form_class = CreateStreetArtForm
 
@@ -255,22 +255,35 @@ class CreateStreetArtView(LoginRequiredMixin, View):
         form = self.form_class(request.POST)
 
         if form.is_valid():
-            art = form.save(commit=False)
-            longitude = form.cleaned_data['longitude']
-            latitude = form.cleaned_data['latitude']
+            title = form.cleaned_data["title"]
+            artist = form.cleaned_data["artist"]
+            year = form.cleaned_data["year"]
+            description = form.cleaned_data["description"]
+            category = form.cleaned_data["category"]
+
+            longitude = form.cleaned_data["longitude"]
+            latitude = form.cleaned_data["latitude"]
             user_location = f"{latitude}, {longitude}"
             geolocator = Nominatim(user_agent="artbase")  # create an object of class Nominatim
             location = geolocator.reverse(user_location, exactly_one=True)  # give the coordinates
 
-            city = location.raw['address']['city']  # extract the city name from the result using the JSON object key
-            art.location = Location.objects.create(
+            city = location.raw["address"][
+                "city"
+            ]  # extract the city name from the result using the JSON object key
+            art_location = Location.objects.create(
                 city=city,
                 longitude=longitude,
                 latitude=latitude,
             )
-            art.save()
-            messages.success(request, "StreetArt został pomyślnie dodany!")
-            return redirect('art-detail', art_pk=art.pk)
+            art = StreetArt.objects.create(
+                title=title,
+                artist=artist,
+                year=year,
+                description=description,
+                category=category,
+                location=art_location,
+            )
+            return redirect("art-detail", art_pk=art.pk)
         else:
             context = {
                 "form": form,
@@ -282,7 +295,6 @@ class CreateStreetArtView(LoginRequiredMixin, View):
 
 class EditStreetArtView(LoginRequiredMixin, View):
     login_url = "/accounts/login/"
-    # permission_required = "auth.group"
     template_name = "artbase/create_update_streetart.html"
     form_class = EditStreetArtForm
 
@@ -303,9 +315,15 @@ class EditStreetArtView(LoginRequiredMixin, View):
         form = self.form_class(request.POST, instance=art)
 
         if form.is_valid():
-            form.save()
-            # messages.success(request, "StreetArt został pomyślnie zmodyfikowany!")
+            art = form.save(commit=False)
+            art.title = form.cleaned_data["title"]
+            art.artist = form.cleaned_data["artist"]
+            art.year = form.cleaned_data["year"]
+            art.description = form.cleaned_data["description"]
+            art.category = form.cleaned_data["category"]
+            art.save()
             return redirect("art-detail", art.pk)
+
         else:
             context = {
                 "form": self.form_class(instance=art),
@@ -316,7 +334,38 @@ class EditStreetArtView(LoginRequiredMixin, View):
 
 
 class ReportArtView(View):
-    template_name = 'artbase/report_art.html'
+    template_name = "artbase/report_art.html"
 
     def get(self, request):
+        return render(request, self.template_name)
+
+
+class LoginView(View):
+    template_name = "artbase/login.html"
+    form_class = LoginForm
+
+    def get(self, request, *args, **kwargs):
+        return render(request, self.template_name, {"form": self.form_class()})
+
+    def post(self, request, *args, **kwargs):
+        form = self.form_class(request.POST)
+        if form.is_valid():
+            user_name = form.cleaned_data["username"]
+            password = form.cleaned_data["password"]
+            user = authenticate(username=user_name, password=password)
+            if user is None:
+                form.add_error(None, "Niepoprawny login lub hasło.")
+                return render(request, self.template_name, {"form": form})
+            else:
+                login(request, user)
+                return redirect("home")
+
+        return render(request, self.template_name, {"form": form})
+
+
+class LogoutView(View):
+    template_name = "artbase/logged_out.html"
+
+    def get(self, request, *args, **kwargs):
+        logout(request)
         return render(request, self.template_name)

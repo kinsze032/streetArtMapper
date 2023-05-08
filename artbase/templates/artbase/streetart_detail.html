@@ -47,7 +47,9 @@
                     <br>
                     <span class="text-info">Twórca: </span><span>{{ review.creator.username }}</span>
                     <br>
-                    <a href="{% url 'review-edit' art.pk review.pk %}" class="btn btn-secondary btn-lg btn-sm active" role="button">Edytuj recenzję</a>
+                    {% if user.is_authenticated %}
+                        <a href="{% url 'review-edit' art.pk review.pk %}" class="btn btn-secondary btn-lg btn-sm active" role="button">Edytuj recenzję</a>
+                    {% endif %}
                     <br>
                 </li>
             {% endfor %}
