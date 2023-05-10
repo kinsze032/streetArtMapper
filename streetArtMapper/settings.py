@@ -33,7 +33,6 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
-    # "artbase.apps.ArtbaseConfig",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -41,6 +40,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "artbase.apps.ArtbaseConfig",
+    "captcha",
 ]
 
 MIDDLEWARE = [
@@ -133,3 +133,6 @@ STATICFILES_DIRS = [
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+RECAPTCHA_PUBLIC_KEY = '6LccAvwlAAAAAMsjJt5gUOnHBYw20LThqeK3dgVt'
+RECAPTCHA_PRIVATE_KEY = '6LccAvwlAAAAAFlZod8WVTSOoUdrZxgBUXBdDM7c'

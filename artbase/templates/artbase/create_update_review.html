@@ -24,6 +24,12 @@
             {{ form.rating.label_tag }}
             {{ form.rating }}
         </div>
+        <div class="form-group">
+            {{ form.captcha }}
+            {% if form.captcha.errors %}
+                <p class="text-danger">{{ form.captcha.errors }}</p>
+            {% endif %}
+        </div>
         <button class="btn btn-secondary btn-sm" type="submit">{% if instance %}Zapisz{% else %}Utwórz{% endif %} recenzję</button>
     </form>
 {% endblock %}

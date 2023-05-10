@@ -212,16 +212,19 @@ class CreateReviewView(LoginRequiredMixin, View):
 
         # save new review or update old review
         if form.is_valid():
-            # Create, but don't save the new review instance.
-            updated_review = form.save(commit=False)
-            # Modify review in some way.
-            updated_review.content = form.cleaned_data["content"]
-            updated_review.rating = form.cleaned_data["rating"]
-            updated_review.art = art
-            updated_review.creator = request.user
-            # Save the new instance.
-            updated_review.save()
-            return redirect("art-detail", art.pk)
+            if form.cleaned_data['captcha']:
+                # Create, but don't save the new review instance.
+                updated_review = form.save(commit=False)
+                # Modify review in some way.
+                updated_review.content = form.cleaned_data["content"]
+                updated_review.rating = form.cleaned_data["rating"]
+                updated_review.art = art
+                updated_review.creator = request.user
+                # Save the new instance.
+                updated_review.save()
+                return redirect("art-detail", art.pk)
+            else:
+                form.add_error(None, "Nieprawidłowa weryfikacja captcha.")
 
         context = {
             "form": form,
@@ -255,42 +258,45 @@ class CreateStreetArtView(LoginRequiredMixin, View):
         form = self.form_class(request.POST)
 
         if form.is_valid():
-            title = form.cleaned_data["title"]
-            artist = form.cleaned_data["artist"]
-            year = form.cleaned_data["year"]
-            description = form.cleaned_data["description"]
-            category = form.cleaned_data["category"]
+            if form.cleaned_data['captcha']:
+                title = form.cleaned_data["title"]
+                artist = form.cleaned_data["artist"]
+                year = form.cleaned_data["year"]
+                description = form.cleaned_data["description"]
+                category = form.cleaned_data["category"]
 
-            longitude = form.cleaned_data["longitude"]
-            latitude = form.cleaned_data["latitude"]
-            user_location = f"{latitude}, {longitude}"
-            geolocator = Nominatim(user_agent="artbase")  # create an object of class Nominatim
-            location = geolocator.reverse(user_location, exactly_one=True)  # give the coordinates
+                longitude = form.cleaned_data["longitude"]
+                latitude = form.cleaned_data["latitude"]
+                user_location = f"{latitude}, {longitude}"
+                geolocator = Nominatim(user_agent="artbase")  # create an object of class Nominatim
+                location = geolocator.reverse(user_location, exactly_one=True)  # give the coordinates
 
-            city = location.raw["address"][
-                "city"
-            ]  # extract the city name from the result using the JSON object key
-            art_location = Location.objects.create(
-                city=city,
-                longitude=longitude,
-                latitude=latitude,
-            )
-            art = StreetArt.objects.create(
-                title=title,
-                artist=artist,
-                year=year,
-                description=description,
-                category=category,
-                location=art_location,
-            )
-            return redirect("art-detail", art_pk=art.pk)
-        else:
-            context = {
-                "form": form,
-                "instance": StreetArt,
-                "model": "StreetArt",
-            }
-            return render(request, self.template_name, context)
+                city = location.raw["address"][
+                    "city"
+                ]  # extract the city name from the result using the JSON object key
+                art_location = Location.objects.create(
+                    city=city,
+                    longitude=longitude,
+                    latitude=latitude,
+                )
+                art = StreetArt.objects.create(
+                    title=title,
+                    artist=artist,
+                    year=year,
+                    description=description,
+                    category=category,
+                    location=art_location,
+                )
+                return redirect("art-detail", art_pk=art.pk)
+            else:
+                form.add_error(None, "Nieprawidłowa weryfikacja captcha.")
+
+        context = {
+            "form": form,
+            "instance": StreetArt,
+            "model": "StreetArt",
+        }
+        return render(request, self.template_name, context)
 
 
 class EditStreetArtView(LoginRequiredMixin, View):
@@ -315,22 +321,24 @@ class EditStreetArtView(LoginRequiredMixin, View):
         form = self.form_class(request.POST, instance=art)
 
         if form.is_valid():
-            art = form.save(commit=False)
-            art.title = form.cleaned_data["title"]
-            art.artist = form.cleaned_data["artist"]
-            art.year = form.cleaned_data["year"]
-            art.description = form.cleaned_data["description"]
-            art.category = form.cleaned_data["category"]
-            art.save()
-            return redirect("art-detail", art.pk)
+            if form.cleaned_data['captcha']:
+                art = form.save(commit=False)
+                art.title = form.cleaned_data["title"]
+                art.artist = form.cleaned_data["artist"]
+                art.year = form.cleaned_data["year"]
+                art.description = form.cleaned_data["description"]
+                art.category = form.cleaned_data["category"]
+                art.save()
+                return redirect("art-detail", art.pk)
+            else:
+                form.add_error(None, "Nieprawidłowa weryfikacja captcha.")
 
-        else:
-            context = {
-                "form": self.form_class(instance=art),
-                "instance": art,
-                "model": "StreetArt",
-            }
-            return render(request, self.template_name, context)
+        context = {
+            "form": self.form_class(instance=art),
+            "instance": art,
+            "model": "StreetArt",
+        }
+        return render(request, self.template_name, context)
 
 
 class ReportArtView(View):
@@ -352,13 +360,17 @@ class LoginView(View):
         if form.is_valid():
             user_name = form.cleaned_data["username"]
             password = form.cleaned_data["password"]
-            user = authenticate(username=user_name, password=password)
-            if user is None:
-                form.add_error(None, "Niepoprawny login lub hasło.")
-                return render(request, self.template_name, {"form": form})
+
+            if form.cleaned_data['captcha']:
+                user = authenticate(username=user_name, password=password)
+                if user is None:
+                    form.add_error(None, "Niepoprawny login lub hasło.")
+                    return render(request, self.template_name, {"form": form})
+                else:
+                    login(request, user)
+                    return redirect("home")
             else:
-                login(request, user)
-                return redirect("home")
+                form.add_error(None, "Niepoprawna weryfikacja captcha.")
 
         return render(request, self.template_name, {"form": form})
 
