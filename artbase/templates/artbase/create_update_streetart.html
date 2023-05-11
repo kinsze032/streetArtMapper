@@ -3,6 +3,11 @@
 {{ page_title|default:'StreetArt' }}
 {% endblock title %}
 {% block content %}
+<style>
+    body {
+        background-color: #c9cad9;
+    }
+</style>
 <br>
 <div class="alert alert-info" role="alert" style="width: 99%">
 {% if instance %}
@@ -11,9 +16,10 @@
     <span style="color:mediumslateblue;font-weight:bold;font-size:large">Nowy </span>{{ model }}<br>
     <span style="color:mediumslateblue;font-weight:bold;font-size:small">Nie zapomnij o przypięciu pinezki na mapie!</span>
     <br>
-</div>
+
 {% endif %}
-<table>
+</div>
+    <table>
     <tr>
         <th>
         <form action="" method="POST">
@@ -38,9 +44,12 @@
                 {{ form.category.label_tag }}
                 {{ form.category }}
             </div>
-            <div class="form-group">
-                {{ form.captcha }}
-            </div>
+                <div class="form-group">
+                    {{ form.captcha }}
+                    {% if form.captcha.errors %}
+                        <p class="text-danger">{{ form.captcha.errors }}</p>
+                    {% endif %}
+                </div>
             {% if form.instance.location %}
                 <button class="btn btn-secondary btn-sm" type="submit">Zapisz StreetArt</button>
             {% else %}
@@ -49,12 +58,6 @@
                 </div>
                 <div class="form-group">
                     {{ form.latitude }}
-                </div>
-                <div class="form-group">
-                    {{ form.captcha }}
-                    {% if form.captcha.errors %}
-                        <p class="text-danger">{{ form.captcha.errors }}</p>
-                    {% endif %}
                 </div>
                 <button class="btn btn-secondary btn-sm" type="submit">Utwórz StreetArt</button>
             {% endif %}

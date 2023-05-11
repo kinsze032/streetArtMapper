@@ -1,4 +1,5 @@
 import folium
+from django.core.paginator import Paginator
 from geopy.geocoders import Nominatim
 
 from django.contrib.auth import login, authenticate, logout
@@ -62,7 +63,7 @@ class HomeView(View):
 
 class StreetArtListView(View):
     def get(self, request):
-        street_arts = StreetArt.objects.all()
+        street_arts = StreetArt.objects.all().order_by("title")
         art_with_reviews = []
         for art in street_arts:
             reviews = art.review_set.all()
@@ -80,7 +81,13 @@ class StreetArtListView(View):
                     "number_of_reviews": number_of_reviews,
                 }
             )
-        context = {"art_list": art_with_reviews}
+        pagination = Paginator(art_with_reviews, 5)
+        page_number = request.GET.get('page')
+        pagination = pagination.get_page(page_number)
+        context = {
+            "art_list": pagination,
+            'page_obj': pagination,
+        }
         return render(request, "artbase/streetart_list.html", context)
 
 

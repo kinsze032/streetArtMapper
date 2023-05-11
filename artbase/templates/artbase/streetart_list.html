@@ -3,26 +3,58 @@
 {{ page_title|default:'Lista Street Art' }}
 {% endblock title %}
 {% block content %}
-<ul class="list-group">
-  {% for art in art_list %}
-  <li class="list-group-item">
-      <span class="text-info">Tytuł </span> <span>{{ art.art.title }}</span>
-      <br>
-      <span class="text-info">Artysta: </span><span>{{ art.art.artist }}</span>
-      <br>
-      <span class="text-info">Miasto: </span><span>{{ art.art.location.city }}</span>
-      <br>
-      <span class="text-info">Ocena: </span><span class="badge badge-secondary badge-pill">{{ art.art_rating }}</span>
-      <br>
-      <span class="text-info">Liczba recenzji: </span><span>{{ art.number_of_reviews }}</span>
-      <br>
-      {% if not art.art_rating %}
-      <span class="text-secondary">Napisz pierwszą recenzję.</span>
-      <br>
-      {% endif %}
-      <br>
-      <a href="{% url 'art-detail' art.art.pk %}" class="btn btn-secondary btn-lg btn-sm active" role="button">Szczegóły Street Artu</a>
-  </li>
-  {% endfor %}
-</ul>
+
+<style>
+    body {
+        background-color: #adb5bd;
+    }
+</style>
+<br>
+<div style="text-align: center">
+    <ul class="pagination justify-content-center">
+        {% if page_obj.has_previous %}
+            <li class="page-item">
+                <a href="?page={{ page_obj.previous_page_number }}" class="page-link"><span aria-hidden="true">&laquo;</span></a>
+            </li>
+        {% endif %}
+        {% for i in page_obj.paginator.page_range %}
+            {% if page_obj.number == i %}
+                <li class="page-item">
+                    <a style="color: orange" class="page-link">{{ i }}</a>
+                </li>
+            {% else %}
+                <li class="page-item">
+                    <a href="?page={{ i }}" class="page-link">{{ i }}</a>
+                </li>
+            {% endif %}
+        {% endfor %}
+        {% if page_obj.has_next %}
+            <li class="page-item">
+                <a href="?page={{ page_obj.next_page_number }}" class="page-link"><span aria-hidden="true">&raquo;</span></a>
+            </li>
+        {% endif %}
+    </ul>
+</div>
+{% for art in art_list %}
+    <ul class="list-group">
+      <li class="list-group-item">
+          <span class="text-info">Tytuł </span> <span>{{ art.art.title }}</span>
+          <br>
+          <span class="text-info">Artysta: </span><span>{{ art.art.artist }}</span>
+          <br>
+          <span class="text-info">Miasto: </span><span>{{ art.art.location.city }}</span>
+          <br>
+          <span class="text-info">Ocena: </span><span class="badge badge-secondary badge-pill">{{ art.art_rating }}</span>
+          <br>
+          <span class="text-info">Liczba recenzji: </span><span>{{ art.number_of_reviews }}</span>
+          <br>
+          {% if not art.art_rating %}
+          <span class="text-secondary">Napisz pierwszą recenzję.</span>
+          <br>
+          {% endif %}
+          <br>
+          <a href="{% url 'art-detail' art.art.pk %}" class="btn btn-secondary btn-lg btn-sm active" role="button">Szczegóły Street Artu</a>
+      </li>
+    </ul>
+{% endfor %}
 {% endblock %}
