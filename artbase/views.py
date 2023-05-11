@@ -1,7 +1,8 @@
 import folium
-from django.core.paginator import Paginator
 from geopy.geocoders import Nominatim
 
+from django.core.paginator import Paginator
+from django.http import HttpResponseNotFound
 from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -93,7 +94,11 @@ class StreetArtListView(View):
 
 class StreetArtDetailView(View):
     def get(self, request, art_pk):
-        art = get_object_or_404(StreetArt, pk=art_pk)
+        try:
+            art = get_object_or_404(StreetArt, pk=art_pk)
+        except StreetArt.DoesNotExist:
+            return HttpResponseNotFound()
+
         reviews = art.review_set.all()
         if reviews:
             art_rating = reviews.aggregate(Avg("rating"))["rating__avg"]

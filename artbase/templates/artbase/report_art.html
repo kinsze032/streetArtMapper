@@ -4,11 +4,6 @@
     {{ page_title|default:'Zgłoś StreetArt' }}
 {% endblock title %}
 {% block content %}
-<style>
-    body {
-        background-color: #FAE1DF;
-    }
-</style>
     <br>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" />
     <div class="art-container">
@@ -28,13 +23,14 @@
   display: flex;
   align-items: center;
 }
-
 .art-image {
   margin-right: 20px;
 }
-
 .art-text {
   flex: 1;
+}
+body {
+    background-color: #FAE1DF;
 }
 </style>
 {% endblock %}
