@@ -1,4 +1,5 @@
 import folium
+from django.core.files.base import ContentFile
 from geopy.geocoders import Nominatim
 from PIL import Image
 from io import BytesIO
@@ -104,6 +105,7 @@ class StreetArtDetailView(View):
         except StreetArt.DoesNotExist:
             return HttpResponseNotFound()
 
+        photos = StreetArtPhoto.objects.filter(street_art=art)
         reviews = art.review_set.all()
         if reviews:
             art_rating = reviews.aggregate(Avg("rating"))["rating__avg"]
@@ -111,12 +113,14 @@ class StreetArtDetailView(View):
                 "art": art,
                 "art_rating": art_rating,
                 "reviews": reviews,
+                "photos": photos,
             }
         else:
             context = {
                 "art": art,
                 "art_rating": None,
                 "reviews": None,
+                "photos": photos,
             }
 
         if request.user.is_authenticated:
@@ -404,6 +408,22 @@ class StreetArtPhotoView(View):
     template_name = "artbase/upload_photo.html"
     form_class = StreetArtPhotoForm
 
+    def process_and_save_images(self, instance, photo):
+        original_image = Image.open(photo)
+
+        # Reduce the image to a thumbnail
+        thumbnail_size = (300, 300)
+        thumbnail_image = original_image.copy()
+        thumbnail_image.thumbnail(thumbnail_size)
+
+        # Saving the original image
+        instance.photo.save(photo.name, photo, save=False)
+
+        # Saving a thumbnail
+        thumbnail_bytes = BytesIO()
+        thumbnail_image.save(thumbnail_bytes, format='JPEG')
+        instance.thumbnail.save('thumbnail_{}'.format(photo.name), ContentFile(thumbnail_bytes.getvalue()), save=False)
+
     def get(self, request, *args, **kwargs):
         art_pk = kwargs["art_pk"]
         art = get_object_or_404(StreetArt, pk=art_pk)
@@ -425,17 +445,9 @@ class StreetArtPhotoView(View):
             photo = form.cleaned_data["photo"]
 
             if photo:
-                image = Image.open(photo)
-                image.thumbnail((300, 300))
-                image_data = BytesIO()
-                image.save(fp=image_data, format=photo.image.format)
-                image_file = ImageFile(image_data)
                 street_art_photo = StreetArtPhoto(street_art=art)
-                street_art_photo.photo.save(photo.name, image_file)
-                return redirect("art-detail", art.pk)
+                self.process_and_save_images(street_art_photo, photo)
+                street_art_photo.save()
 
-        context = {
-            "art": art,
-            "form": form,
-        }
-        return render(request, self.template_name, context)
+        return redirect("art-detail", art.pk)
+

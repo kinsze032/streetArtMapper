@@ -23,6 +23,7 @@ class StreetArt(models.Model):
 class StreetArtPhoto(models.Model):
     street_art = models.ForeignKey(StreetArt, on_delete=models.CASCADE)
     photo = models.ImageField(null=True, blank=True, upload_to=art_file_path)
+    thumbnail = models.ImageField(upload_to=art_file_path, blank=True, null=True)
 
 
 class Category(models.Model):

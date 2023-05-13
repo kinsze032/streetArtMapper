@@ -9,29 +9,40 @@
         width: 30%;
     }
 </style>
-<br>
-    <form method="post" enctype="multipart/form-data">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button class="btn btn-secondary btn-sm" type="submit">Wyślij</button>
-    </form>
     <br>
-    <h4>Zdjęcia:</h4>
+    <h5>Zdjęcia: <span>{{ art.title }}</span></h5>
     <div class="art-item__image">
         {% if photos %}
             <div class="row">
               {% for photo in photos %}
-                  <div class="col-md-4">
+                <div class="col-md-4">
                     <a href="{{ photo.photo.url }}" target="_blank">
-                      <img src="{{ photo.photo.url }}" alt="Photo" class="img-thumbnail">
+                        <img src="{{ photo.thumbnail.url }}" class="img-thumbnail">
                     </a>
-                  </div>
+                </div>
+                {% if forloop.counter|divisibleby:6 and not forloop.last %}
+                    </div><div class="row">
+                {% endif %}
               {% endfor %}
             </div>
         {% else %}
             <div class="col-md-12">
                 <p>Nie ma jeszcze żadnych zdjęć</p>
             </div>
+        {% endif %}
     </div>
-    {% endif %}
+    <br>
+    <br>
+    <hr>
+{% if user.is_authenticated %}
+    <div class="alert alert-info" role="alert" style="width: 25%">
+        <span style="color:mediumslateblue;font-weight:bold;font-size:medium">Dodaj zdjęcie dot. streetartu: {{ art.title }}</span>
+    </div>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button class="btn btn-secondary btn-sm" type="submit">Wyślij</button>
+    </form>
+{% endif %}
+
 {% endblock %}

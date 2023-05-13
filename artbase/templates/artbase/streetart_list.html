@@ -53,33 +53,33 @@
     <div class="art-item">
         <div class="art-item__details">
             <ul class="list-group">
-                      <li class="list-group-item">
-                          <span class="text-info">Tytuł </span> <span>{{ art.art.title }}</span>
-                          <br>
-                          <span class="text-info">Artysta: </span><span>{{ art.art.artist }}</span>
-                          <br>
-                          <span class="text-info">Miasto: </span><span>{{ art.art.location.city }}</span>
-                          <br>
-                          <span class="text-info">Ocena: </span><span class="badge badge-secondary badge-pill">{{ art.art_rating }}</span>
-                          <br>
-                          <span class="text-info">Liczba recenzji: </span><span>{{ art.number_of_reviews }}</span>
-                          <br>
-                          {% if not art.art_rating %}
-                            <span class="text-secondary">Napisz pierwszą recenzję.</span>
-                            <br>
-                            {% endif %}
-                          <br>
-                          <a href="{% url 'art-detail' art.art.pk %}" class="btn btn-secondary btn-lg btn-sm active" role="button">Szczegóły Street Artu</a>
-                      </li>
+                <li class="list-group-item">
+                  <span class="text-info">Tytuł </span> <span>{{ art.art.title }}</span>
+                  <br>
+                  <span class="text-info">Artysta: </span><span>{{ art.art.artist }}</span>
+                  <br>
+                  <span class="text-info">Miasto: </span><span>{{ art.art.location.city }}</span>
+                  <br>
+                  <span class="text-info">Ocena: </span><span class="badge badge-secondary badge-pill">{{ art.art_rating }}</span>
+                  <br>
+                  <span class="text-info">Liczba recenzji: </span><span>{{ art.number_of_reviews }}</span>
+                  <br>
+                  {% if not art.art_rating %}
+                    <span class="text-secondary">Napisz pierwszą recenzję.</span>
+                    <br>
+                    {% endif %}
+                  <br>
+                  <a href="{% url 'art-detail' art.art.pk %}" class="btn btn-secondary btn-lg btn-sm active" role="button">Szczegóły Street Artu</a>
+                </li>
             </ul>
         </div>
         <div class="art-item__image">
             {% if art.photos %}
                 <div class="row">
-                    {% for photo in art.photos %}
+                    {% for photo in art.photos|slice:":6" %}
                         <div class="col-md-4">
                             <a href="{{ photo.photo.url }}" target="_blank">
-                                <img src="{{ photo.photo.url }}" alt="Photo" class="img-thumbnail">
+                                <img src="{{ photo.photo.url }}" class="img-thumbnail">
                             </a>
                         </div>
                     {% endfor %}
@@ -87,7 +87,6 @@
             {% else %}
                 <p>Nie ma jeszcze żadnych zdjęć</p>
             {% endif %}
-        </div>
         </div>
     </div>
 {% endfor %}

@@ -7,6 +7,9 @@
     body {
         background-color: #E6E6E6;
     }
+    .art-item__image {
+    width: 30%;
+}
 </style>
     <br>
     <h2>Szczegółowe informacje o Street Art</h2>
@@ -26,10 +29,32 @@
     <span class="text-info">Ocena ogólna: </span><span class="badge badge-secondary badge-pill">{{ art_rating }}</span>
     <br>
     <br>
-    <a class="btn btn-secondary btn-lg btn-sm active" href="{% url 'art-photo' art.pk %}">Zdjęcia</a>
     {% if user.is_authenticated %}
+        <a class="btn btn-secondary btn-lg btn-sm active" href="{% url 'art-photo' art.pk %}">Dodaj zdjęcie</a>
         <a href="{% url 'art-edit' art.pk %}" class="btn btn-secondary btn-lg btn-sm active" role="button">Edytuj StreetArt</a>
     {% endif %}
+    <hr>
+        <div class="art-item__image">
+        {% if photos %}
+            <div class="row">
+              {% for photo in photos %}
+                <div class="col-md-4">
+                    <a href="{{ photo.photo.url }}" target="_blank">
+                        <img src="{{ photo.thumbnail.url }}" class="img-thumbnail">
+                    </a>
+                </div>
+                {% if forloop.counter|divisibleby:6 and not forloop.last %}
+                    </div><div class="row">
+                {% endif %}
+              {% endfor %}
+            </div>
+        {% else %}
+            <div class="col-md-12">
+                <p>Nie ma jeszcze żadnych zdjęć</p>
+            </div>
+        {% endif %}
+    </div>
+    <br>
     {% if not reviews %}
         <hr>
         {% if user.is_authenticated %}
