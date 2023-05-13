@@ -404,7 +404,8 @@ class LogoutView(View):
         return render(request, self.template_name)
 
 
-class StreetArtPhotoView(View):
+class StreetArtPhotoView(LoginRequiredMixin, View):
+    login_url = "/accounts/login/"
     template_name = "artbase/upload_photo.html"
     form_class = StreetArtPhotoForm
 
