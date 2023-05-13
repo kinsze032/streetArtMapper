@@ -5,7 +5,7 @@ User = get_user_model()
 
 
 def art_file_path(instance, filename):
-    return "art-photo/{}/{}".format(instance.id, filename)
+    return "art-photo/{}/{}".format(instance.street_art.id, filename)
 
 
 class StreetArt(models.Model):
@@ -15,12 +15,14 @@ class StreetArt(models.Model):
     description = models.TextField()
     category = models.ForeignKey('Category', on_delete=models.CASCADE)
     location = models.OneToOneField('Location', on_delete=models.CASCADE)
-    photo = models.ImageField(null=True,
-                              blank=True,
-                              upload_to=art_file_path)
 
     def __str__(self):
         return self.title
+
+
+class StreetArtPhoto(models.Model):
+    street_art = models.ForeignKey(StreetArt, on_delete=models.CASCADE)
+    photo = models.ImageField(null=True, blank=True, upload_to=art_file_path)
 
 
 class Category(models.Model):

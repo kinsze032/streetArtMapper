@@ -14,7 +14,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.views import View
 
 from artbase.forms import SearchForm, ReviewForm, CreateStreetArtForm, EditStreetArtForm, StreetArtPhotoForm
-from artbase.models import StreetArt, Category, Review, Location
+from artbase.models import StreetArt, Category, Review, Location, StreetArtPhoto
 from artbase.forms import LoginForm
 
 
@@ -78,11 +78,13 @@ class StreetArtListView(View):
                 art_rating = None
                 number_of_reviews = 0
 
+            photos = StreetArtPhoto.objects.filter(street_art=art)
             art_with_reviews.append(
                 {
                     "art": art,
                     "art_rating": art_rating,
                     "number_of_reviews": number_of_reviews,
+                    "photos": photos,
                 }
             )
         pagination = Paginator(art_with_reviews, 5)
@@ -405,13 +407,19 @@ class StreetArtPhotoView(View):
     def get(self, request, *args, **kwargs):
         art_pk = kwargs["art_pk"]
         art = get_object_or_404(StreetArt, pk=art_pk)
+        photos = StreetArtPhoto.objects.filter(street_art=art)
         form = self.form_class()
-        return render(request, self.template_name, {"art": art, "form": form})
+        context = {
+            "art": art,
+            "photos": photos,
+            "form": form,
+        }
+        return render(request, self.template_name, context)
 
     def post(self, request, *args, **kwargs):
         art_pk = kwargs["art_pk"]
         art = get_object_or_404(StreetArt, pk=art_pk)
-        form = self.form_class(request.POST, request.FILES, instance=art)
+        form = self.form_class(request.POST, request.FILES)
 
         if form.is_valid():
             photo = form.cleaned_data["photo"]
@@ -422,8 +430,12 @@ class StreetArtPhotoView(View):
                 image_data = BytesIO()
                 image.save(fp=image_data, format=photo.image.format)
                 image_file = ImageFile(image_data)
-                art.photo.save(photo.name, image_file)
-                art.save()
+                street_art_photo = StreetArtPhoto(street_art=art)
+                street_art_photo.photo.save(photo.name, image_file)
                 return redirect("art-detail", art.pk)
 
-        return render(request, self.template_name, {"art": art, "form": form})
+        context = {
+            "art": art,
+            "form": form,
+        }
+        return render(request, self.template_name, context)
