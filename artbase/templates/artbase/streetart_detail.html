@@ -26,10 +26,10 @@
     <span class="text-info">Ocena ogólna: </span><span class="badge badge-secondary badge-pill">{{ art_rating }}</span>
     <br>
     <br>
+    <a class="btn btn-secondary btn-lg btn-sm active" href="{% url 'art-photo' art.pk %}">Zdjęcia</a>
     {% if user.is_authenticated %}
         <a href="{% url 'art-edit' art.pk %}" class="btn btn-secondary btn-lg btn-sm active" role="button">Edytuj StreetArt</a>
     {% endif %}
-    <br>
     {% if not reviews %}
         <hr>
         {% if user.is_authenticated %}

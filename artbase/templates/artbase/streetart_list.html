@@ -8,6 +8,18 @@
     body {
         background-color: #adb5bd;
     }
+    .art-item {
+        display: flex;
+        justify-content: left;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+    .art-item__details {
+        width: 30%;
+    }
+    .art-item__image {
+        width: 30%;
+    }
 </style>
 <br>
 <div style="text-align: center">
@@ -36,8 +48,10 @@
     </ul>
 </div>
 {% for art in art_list %}
-    <ul class="list-group">
-      <li class="list-group-item">
+    <div class="art-item">
+        <div class="art-item__details">
+            <ul class="list-group">
+                      <li class="list-group-item">
           <span class="text-info">Tytuł </span> <span>{{ art.art.title }}</span>
           <br>
           <span class="text-info">Artysta: </span><span>{{ art.art.artist }}</span>
@@ -49,12 +63,20 @@
           <span class="text-info">Liczba recenzji: </span><span>{{ art.number_of_reviews }}</span>
           <br>
           {% if not art.art_rating %}
-          <span class="text-secondary">Napisz pierwszą recenzję.</span>
-          <br>
-          {% endif %}
+            <span class="text-secondary">Napisz pierwszą recenzję.</span>
+            <br>
+            {% endif %}
           <br>
           <a href="{% url 'art-detail' art.art.pk %}" class="btn btn-secondary btn-lg btn-sm active" role="button">Szczegóły Street Artu</a>
       </li>
     </ul>
+
+        </div>
+        <div class="art-item__image">
+            {% if art.art.photo %}
+                <img src="{{ art.art.photo.url }}">
+            {% endif %}
+        </div>
+    </div>
 {% endfor %}
-{% endblock %}
+{% endblock content %}

@@ -4,6 +4,10 @@ from django.db import models
 User = get_user_model()
 
 
+def art_file_path(instance, filename):
+    return "art-photo/{}/{}".format(instance.id, filename)
+
+
 class StreetArt(models.Model):
     title = models.CharField(max_length=100)
     artist = models.CharField(max_length=100)
@@ -11,6 +15,9 @@ class StreetArt(models.Model):
     description = models.TextField()
     category = models.ForeignKey('Category', on_delete=models.CASCADE)
     location = models.OneToOneField('Location', on_delete=models.CASCADE)
+    photo = models.ImageField(null=True,
+                              blank=True,
+                              upload_to=art_file_path)
 
     def __str__(self):
         return self.title

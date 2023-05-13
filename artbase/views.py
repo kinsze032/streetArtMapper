@@ -1,6 +1,9 @@
 import folium
 from geopy.geocoders import Nominatim
+from PIL import Image
+from io import BytesIO
 
+from django.core.files.images import ImageFile
 from django.core.paginator import Paginator
 from django.http import HttpResponseNotFound
 from django.contrib.auth import login, authenticate, logout
@@ -10,7 +13,7 @@ from django.db.models import Avg
 from django.shortcuts import render, get_object_or_404, redirect
 from django.views import View
 
-from artbase.forms import SearchForm, ReviewForm, CreateStreetArtForm, EditStreetArtForm
+from artbase.forms import SearchForm, ReviewForm, CreateStreetArtForm, EditStreetArtForm, StreetArtPhotoForm
 from artbase.models import StreetArt, Category, Review, Location
 from artbase.forms import LoginForm
 
@@ -393,3 +396,34 @@ class LogoutView(View):
     def get(self, request, *args, **kwargs):
         logout(request)
         return render(request, self.template_name)
+
+
+class StreetArtPhotoView(View):
+    template_name = "artbase/upload_photo.html"
+    form_class = StreetArtPhotoForm
+
+    def get(self, request, *args, **kwargs):
+        art_pk = kwargs["art_pk"]
+        art = get_object_or_404(StreetArt, pk=art_pk)
+        form = self.form_class()
+        return render(request, self.template_name, {"art": art, "form": form})
+
+    def post(self, request, *args, **kwargs):
+        art_pk = kwargs["art_pk"]
+        art = get_object_or_404(StreetArt, pk=art_pk)
+        form = self.form_class(request.POST, request.FILES, instance=art)
+
+        if form.is_valid():
+            photo = form.cleaned_data["photo"]
+
+            if photo:
+                image = Image.open(photo)
+                image.thumbnail((300, 300))
+                image_data = BytesIO()
+                image.save(fp=image_data, format=photo.image.format)
+                image_file = ImageFile(image_data)
+                art.photo.save(photo.name, image_file)
+                art.save()
+                return redirect("art-detail", art.pk)
+
+        return render(request, self.template_name, {"art": art, "form": form})

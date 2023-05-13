@@ -16,20 +16,21 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
+from django.conf import settings
+from django.conf.urls.static import static
 from artbase.views import HomeView, StreetArtDetailView, StreetArtListView
 from artbase.views import StreetArtSearchView
 from artbase.views import CreateReviewView, CreateStreetArtView, EditStreetArtView, ReportArtView
-from artbase.views import profile, LoginView, LogoutView
+from artbase.views import profile, LoginView, LogoutView, StreetArtPhotoView
 
 urlpatterns = [
-    # path('accounts/',
-    #      include(('django.contrib.auth.urls', 'auth'), namespace='accounts')),
     path('accounts/profile/', profile, name='profile'),
     path('accounts/login/', LoginView.as_view(), name='login'),
     path('accounts/logout/', LogoutView.as_view(), name='logout'),
     path('admin/', admin.site.urls),
     path('', HomeView.as_view(), name='home'),
     path('streetart/<int:art_pk>/', StreetArtDetailView.as_view(), name='art-detail'),
+    path('streetart/<int:art_pk>/photo/', StreetArtPhotoView.as_view(), name="art-photo"),
     path('streetart/list/', StreetArtListView.as_view(), name='art-list'),
     path('streetart/search/', StreetArtSearchView.as_view(), name='art-search'),
     path('streetart/<int:art_pk>/review/new/', CreateReviewView.as_view(), name='review-create'),
@@ -37,5 +38,6 @@ urlpatterns = [
     path('streetart/new/', CreateStreetArtView.as_view(), name='art-create'),
     path('streetart/<int:art_pk>/edit/', EditStreetArtView.as_view(), name='art-edit'),
     path('streetart/zglos-streetart/', ReportArtView.as_view(), name='report-art'),
-]
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
 
