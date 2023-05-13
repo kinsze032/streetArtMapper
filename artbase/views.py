@@ -1,10 +1,9 @@
 import folium
-from django.core.files.base import ContentFile
 from geopy.geocoders import Nominatim
 from PIL import Image
 from io import BytesIO
 
-from django.core.files.images import ImageFile
+from django.core.files.base import ContentFile
 from django.core.paginator import Paginator
 from django.http import HttpResponseNotFound
 from django.contrib.auth import login, authenticate, logout
