@@ -1,0 +1,92 @@
+{% extends 'artbase/main.html' %}
+{% block title %}
+{{ page_title|default:'Szczegółowe informacje' }}
+{% endblock title %}
+{% block content %}
+<style>
+    body {
+        background-color: #E6E6E6;
+    }
+    .art-item__image {
+    width: 30%;
+}
+</style>
+    <br>
+    <h2>Szczegółowe informacje o Street Art</h2>
+    <hr>
+    <span class="text-info">Tytuł: </span> <span>{{ art.title }}</span>
+    <br>
+    <span class="text-info">Artist: </span><span>{{ art.artist }}</span>
+    <br>
+    <span class="text-info">Typ: </span><span>{{ art.category.get_type_name }}</span>
+    <br>
+    <span class="text-info">Rok stworzenia: </span><span>{{ art.year }}</span>
+    <br>
+    <span class="text-info">Miasto: </span><span>{{ art.location.city }}</span>
+    <br>
+    <span class="text-info">Opis: </span><span>{{ art.description }}</span>
+    <br>
+    <span class="text-info">Ocena ogólna: </span><span class="badge badge-secondary badge-pill">{{ art_rating }}</span>
+    <br>
+    <br>
+    <a class="btn btn-secondary btn-lg btn-sm active" href="{% url 'art-photo' art.pk %}">Dodaj zdjęcie</a>
+    {% if user.is_authenticated %}
+        <a href="{% url 'art-edit' art.pk %}" class="btn btn-secondary btn-lg btn-sm active" role="button">Edytuj StreetArt</a>
+    {% endif %}
+    <hr>
+        <div class="art-item__image">
+        {% if photos %}
+            <div class="row">
+              {% for photo in photos %}
+                <div class="col-md-4">
+                    <a href="{{ photo.photo.url }}" target="_blank">
+                        <img src="{{ photo.thumbnail.url }}" class="img-thumbnail">
+                    </a>
+                </div>
+                {% if forloop.counter|divisibleby:6 and not forloop.last %}
+                    </div><div class="row">
+                {% endif %}
+              {% endfor %}
+            </div>
+        {% else %}
+            <div class="col-md-12">
+                <p>Nie ma jeszcze żadnych zdjęć</p>
+            </div>
+        {% endif %}
+    </div>
+    <br>
+    {% if not reviews %}
+        <hr>
+        {% if user.is_authenticated %}
+            <h3>Napisz pierwszą recenzję.</h3>
+        {% endif %}
+    {% else %}
+
+        <hr>
+        <h1>Recenzje</h1>
+        <ul>
+            {% for review in reviews %}
+                <li class="list-group-item">
+                    <span class="text-info">Recenzja: </span> <span>{{ review.content }}</span>
+                    <br>
+                    <span class="text-info">Data utworzenia: </span><span>{{ review.date_created }}</span>
+                    <br>
+                    <span class="text-info">Data edycji: </span><span>{{ review.date_edited }}</span>
+                    <br>
+                    <span class="text-info">Ocena: </span><span class="badge badge-secondary badge-pill">{{ review.rating }}</span>
+                    <br>
+                    <span class="text-info">Twórca: </span><span>{{ review.creator.username }}</span>
+                    <br>
+                    {% if user.is_authenticated %}
+                        <a href="{% url 'review-edit' art.pk review.pk %}" class="btn btn-secondary btn-lg btn-sm active" role="button">Edytuj recenzję</a>
+                    {% endif %}
+                    <br>
+                </li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+    <br>
+    {% if user.is_authenticated %}
+        <a href="{% url 'review-create' art.pk %}" class="btn btn-secondary btn-lg btn-sm active" role="button">Dodaj recenzję</a>
+    {% endif %}
+{% endblock %}

@@ -1,0 +1,36 @@
+{% extends "artbase/main.html" %}
+{% load static %}
+{% block title %}
+    {{ page_title|default:'Zgłoś StreetArt' }}
+{% endblock title %}
+{% block content %}
+    <br>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" />
+    <div class="art-container">
+    <div class="art-image">
+        <img src="{% static 'artbase/tiny_cat.jpg' %}" width="500px" alt="kot">
+    </div>
+    <div class="art-text">
+        <h1>ZGŁOŚ STREET ART</h1>
+        <p>Znalazłeś street art? Nie wahaj się, wyślij jego lokalizację (najlepiej link do mapy Google) z opisem jak dokładnie można go znaleźć, wraz ze zdjęciem w najwyższej możliwej rozdzielczości. Aby to zrobić, wyślij maila na poniższy adres.</p>
+        <p><i class="fas fa-envelope"></i> <strong>NASZ EMAIL:</strong>  streetart@streetartmapper.com</p>
+    </div>
+</div>
+
+
+<style>
+.art-container {
+  display: flex;
+  align-items: center;
+}
+.art-image {
+  margin-right: 20px;
+}
+.art-text {
+  flex: 1;
+}
+body {
+    background-color: #FAE1DF;
+}
+</style>
+{% endblock %}

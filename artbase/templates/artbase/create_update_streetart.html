@@ -1,0 +1,114 @@
+{% extends "artbase/main.html" %}
+{% block title %}
+{{ page_title|default:'StreetArt' }}
+{% endblock title %}
+{% block content %}
+<style>
+    body {
+        background-color: #c9cad9;
+    }
+</style>
+<br>
+<div class="alert alert-info" role="alert" style="width: 99%">
+{% if instance %}
+    <span style="color:mediumslateblue;font-weight:bold;font-size:large">Edycja </span>{{ model }}
+{% else %}
+    <span style="color:mediumslateblue;font-weight:bold;font-size:large">Nowy </span>{{ model }}<br>
+    <span style="color:mediumslateblue;font-weight:bold;font-size:small">Nie zapomnij o przypięciu pinezki na mapie!</span>
+    <br>
+{% endif %}
+</div>
+    <table>
+    <tr>
+        <th>
+        <form action="" method="POST">
+            {% csrf_token %}
+            <div class="form-group">
+                {{ form.title.label_tag }}
+                {{ form.title }}
+            </div>
+            <div class="form-group">
+                {{ form.artist.label_tag }}
+                {{ form.artist }}
+            </div>
+            <div class="form-group">
+                {{ form.year.label_tag }}
+                {{ form.year }}
+            </div>
+            <div class="form-group">
+                {{ form.description.label_tag }}
+                {{ form.description }}
+            </div>
+            <div class="form-group">
+                {{ form.category.label_tag }}
+                {{ form.category }}
+            </div>
+                <div class="form-group">
+                    {{ form.captcha }}
+                    {% if form.captcha.errors %}
+                        <p class="text-danger">{{ form.captcha.errors }}</p>
+                    {% endif %}
+                </div>
+            {% if form.instance.location %}
+                <button class="btn btn-secondary btn-sm" type="submit">Zapisz StreetArt</button>
+            {% else %}
+                <div class="form-group">
+                    {{ form.longitude }}
+                </div>
+                <div class="form-group">
+                    {{ form.latitude }}
+                </div>
+                <button class="btn btn-secondary btn-sm" type="submit">Utwórz StreetArt</button>
+            {% endif %}
+
+        </form>
+        </th>
+        {% if not form.instance.location %}
+            <th>
+                <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css"
+                 integrity="sha256-kLaT2GOSpHechhsozzB+flnD+zUyjE2LlfWPgU04xyI="
+                 crossorigin=""/>
+                <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"
+                integrity="sha256-WBkoXOwTeyKclOHuWtc+i2uENFpDZ9YPdf5Hf+D7ewM="
+                crossorigin="">
+                </script>
+                <div id="map" style="height: 500px; width: 500px"></div>
+                    <script>
+                    let map = L.map('map').setView([50.264403, 19.023606], 13);
+                    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    maxZoom: 19,
+                    attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                }).addTo(map);
+
+                let marker = null;
+                let latitudeInput = document.querySelector('input[name="latitude"]');
+                let longitudeInput = document.querySelector('input[name="longitude"]');
+
+                map.on('click', (event) => {
+                    if (marker) {
+                        marker.remove();
+                    }
+                    let latitude = event.latlng.lat
+                    let longitude = event.latlng.lng
+                    marker = L.marker([latitude, longitude]).addTo(map);
+                    latitudeInput.value = latitude;
+                    longitudeInput.value = longitude;
+
+                })
+                let form = document.querySelector('form');
+
+                form.addEventListener('submit', (event) => {
+                    event.preventDefault();
+
+                    if (!marker) {
+                        alert('Wybierz miejsce na mapie!');
+                        return;
+                    }
+                    form.submit();
+                });
+                </script>
+            </th>
+        {% endif %}
+    </tr>
+</table>
+{% endblock %}

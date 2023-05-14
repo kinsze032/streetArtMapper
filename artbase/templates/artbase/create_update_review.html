@@ -1,0 +1,40 @@
+{% extends "artbase/main.html" %}
+{% block title %}
+{{ page_title|default:'Recenzja' }}
+{% endblock title %}
+{% block content %}
+<style>
+    body {
+        background-color: #c9cad9;
+    }
+</style>
+    <br>
+    <div class="alert alert-info" role="alert" style="width: 99%">
+    {% if instance %}
+        <span style="color:mediumslateblue;font-weight:bold;font-size:large">Edycja</span> {{ model }}
+    {% else %}
+        <span style="color:mediumslateblue;font-weight:bold;font-size:large">Nowy</span> {{ model }}
+    {% endif %}
+    {% if related_instance and related_model %}
+        <p>{{ related_model }}: <em>{{ related_instance }}</em></p>
+    {% endif %}
+    </div>
+    <form action="" method="POST">
+        {% csrf_token %}
+        <div class="form-group">
+            {{ form.content.label_tag }}
+            {{ form.content }}
+        </div>
+        <div class="form-group">
+            {{ form.rating.label_tag }}
+            {{ form.rating }}
+        </div>
+        <div class="form-group">
+            {{ form.captcha }}
+            {% if form.captcha.errors %}
+                <p class="text-danger">{{ form.captcha.errors }}</p>
+            {% endif %}
+        </div>
+        <button class="btn btn-secondary btn-sm" type="submit">{% if instance %}Zapisz{% else %}Utwórz{% endif %} recenzję</button>
+    </form>
+{% endblock %}

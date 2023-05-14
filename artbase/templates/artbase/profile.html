@@ -1,0 +1,46 @@
+{% extends "artbase/main.html" %}
+
+{% block content %}
+<style>
+.flexrow { display: flex;
+           border: 2px black;
+}
+.flexrow > div { flex: 1; }
+
+.infocell {
+    border: 2px solid cornflowerblue;
+    border-radius: 5px 25px;
+    background-color: antiquewhite;
+    padding: 5px;
+    margin: 20px 20px 5px 5px;
+}
+body {
+        background-color: #c9cad9;
+}
+</style>
+
+  <div class="flexrow">
+    <div class="infocell">
+        <h3><span class="badge badge-info">Profil</span></h3>
+        <p>
+          <b><span class="text-info">Nazwa użytkownika: </span></b>{{ request.user.username }} <br>
+          <b><span class="text-info">Name: </span></b>{{ request.user.first_name }} {{ request.user.last_name }}<br>
+          <b><span class="text-info">Data dołączenia: </span></b>{{ request.user.date_joined }} <br>
+          <b><span class="text-info">E-mail: </span></b>{{ request.user.email }}<br>
+          <b><span class="text-info">Data ostatniego logowania: </span></b>{{ request.user.last_login }}<br>
+        </p>
+    </div>
+    <div class="infocell">
+        <h3><span class="badge badge-info">Wyświetlone Street Arty</span></h3>
+        {% if request.session.viewed_arts %}
+            {% for vieved_art in request.session.viewed_arts %}
+                <a href="/streetart/{{ vieved_art.0 }}/" class="link-info"><b><span class="text-info">{{ vieved_art.1 }}</span></b></a><br>
+            {% endfor %}
+            </ul>
+        {% else %}
+            <p>Brak ostatnio wyświetlonych Street Artów.</p>
+        {% endif %}
+    </div>
+  </div>
+
+{% endblock %}

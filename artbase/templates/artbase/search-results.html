@@ -1,0 +1,44 @@
+{% extends 'artbase/main.html' %}
+
+{% block content %}
+<style>
+    body {
+        background-color: #c9cad9;
+    }
+</style>
+    <br>
+    <div class="alert alert-info" role="alert" style="width: 99%">
+      Wyszukiwanie Street Artu
+    </div>
+    <form action="" method="POST">
+        {% csrf_token %}
+      <div class="form-group mx-sm-1 mb-3">
+        {{ form.search.label_tag }}
+        {{ form.search }}
+      </div>
+      <div class="form-group mx-sm-1 mb-3">
+        {{ form.search_in.label_tag}}
+        {{ form.search_in }}
+      </div>
+        <button class="btn btn-secondary btn-sm active" type="submit">Szukaj</button>
+    </form>
+    <br>
+
+    {% if form.is_valid and search_text %}
+        <span class="text-info">Wyniki wyszukiwania dla <em><b>{{ search_text }}</b></em> wg. {{ form.search_in }}</span>
+        <ul class="list-group">
+            {% for art in arts %}
+                <li class="list-group-item">
+                    <span class="text-info">Tytuł: </span> <a href="{% url 'art-detail' art.pk %}">{{ art }}</a>
+                    <br>
+                    <span class="text-info">Miasto: </span><span>{{ art.location.city }}</span>
+                    <br>
+                    <span class="text-info">Typ: </span><span>{{ art.category.get_type_name }}</span>
+                    <br>
+                </li>
+            {% empty %}
+                <li class="list-group-item">Nie znaleziono wyników.</li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+{% endblock %}

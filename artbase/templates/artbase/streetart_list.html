@@ -1,0 +1,93 @@
+{% extends 'artbase/main.html' %}
+{% block title %}
+{{ page_title|default:'Lista Street Art' }}
+{% endblock title %}
+{% block content %}
+
+<style>
+    body {
+        background-color: #adb5bd;
+    }
+    .art-item {
+        display: flex;
+        justify-content: left;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+    .art-item__details {
+        width: 30%;
+    }
+    .art-item__image {
+        width: 30%;
+        margin-left: 10px;
+
+    }
+</style>
+<br>
+<div style="text-align: center">
+    <ul class="pagination justify-content-center">
+        {% if page_obj.has_previous %}
+            <li class="page-item">
+                <a href="?page={{ page_obj.previous_page_number }}" class="page-link"><span aria-hidden="true">&laquo;</span></a>
+            </li>
+        {% endif %}
+        {% for i in page_obj.paginator.page_range %}
+            {% if page_obj.number == i %}
+                <li class="page-item">
+                    <a style="color: orange" class="page-link">{{ i }}</a>
+                </li>
+            {% else %}
+                <li class="page-item">
+                    <a href="?page={{ i }}" class="page-link">{{ i }}</a>
+                </li>
+            {% endif %}
+        {% endfor %}
+        {% if page_obj.has_next %}
+            <li class="page-item">
+                <a href="?page={{ page_obj.next_page_number }}" class="page-link"><span aria-hidden="true">&raquo;</span></a>
+            </li>
+        {% endif %}
+    </ul>
+</div>
+{% for art in art_list %}
+    <div class="art-item">
+        <div class="art-item__details">
+            <ul class="list-group">
+                <li class="list-group-item">
+                  <span class="text-info">Tytuł </span> <span>{{ art.art.title }}</span>
+                  <br>
+                  <span class="text-info">Artysta: </span><span>{{ art.art.artist }}</span>
+                  <br>
+                  <span class="text-info">Miasto: </span><span>{{ art.art.location.city }}</span>
+                  <br>
+                  <span class="text-info">Ocena: </span><span class="badge badge-secondary badge-pill">{{ art.art_rating }}</span>
+                  <br>
+                  <span class="text-info">Liczba recenzji: </span><span>{{ art.number_of_reviews }}</span>
+                  <br>
+                  {% if not art.art_rating %}
+                    <span class="text-secondary">Napisz pierwszą recenzję.</span>
+                    <br>
+                    {% endif %}
+                  <br>
+                  <a href="{% url 'art-detail' art.art.pk %}" class="btn btn-secondary btn-lg btn-sm active" role="button">Szczegóły Street Artu</a>
+                </li>
+            </ul>
+        </div>
+        <div class="art-item__image">
+            {% if art.photos %}
+                <div class="row">
+                    {% for photo in art.photos|slice:":6" %}
+                        <div class="col-md-4">
+                            <a href="{{ photo.photo.url }}" target="_blank">
+                                <img src="{{ photo.photo.url }}" class="img-thumbnail">
+                            </a>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p>Nie ma jeszcze żadnych zdjęć</p>
+            {% endif %}
+        </div>
+    </div>
+{% endfor %}
+{% endblock content %}
