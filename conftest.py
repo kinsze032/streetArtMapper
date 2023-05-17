@@ -6,7 +6,7 @@ from artbase.views import CreateStreetArtView, HomeView
 
 @pytest.fixture
 def user():
-    return User.objects.create(username="test_user", password="test_pwd")
+    return User.objects.create_user(username="test_user", password="test_pwd")
 
 
 @pytest.fixture

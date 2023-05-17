@@ -1,4 +1,5 @@
 import pytest
+from django.contrib.auth import logout
 
 from django.test import Client
 from django.urls import reverse
@@ -71,20 +72,39 @@ def test_home_view_get_map(home_view, street_art):
     assert isinstance(response.context["map"], str)
     assert "Test Art" in response.content.decode()
 
-# Nieudane próby napisania testów
 
-# @pytest.mark.django_db
-# def test_login_view(client, user):
-#     # TU TEŻ NIE PRZECHODZI BO MNIE NIE UWIERZYTELNIA
-#     response = client.post("/accounts/login/", {"username": "test_user", "password": "test_pwd", "captcha": True})
-#     assert response.status_code == 200  # Sprawdzanie przekierowania do strony głównej po poprawnym uwierzytelnieniu i zalogowaniu
-#
-#     response = client.post("/accounts/login/", {"username": "invalid_user", "password": "invalid_password", "captcha": True})
-#     assert response.status_code == 400  # Sprawdzanie kodu statusu przy niepoprawnych danych logowania
-#
-#     response = client.post("/accounts/login/", {"username": "test_user", "password": "test_pwd", "captcha": False})
-#     assert response.status_code == 400  # Sprawdzanie kodu statusu przy niepoprawnej weryfikacji captcha
-#
+# Nieudane próby napisania testów
+@pytest.mark.django_db
+def test_login_view(client, user):
+    response = client.get("/accounts/login/")  # Wysyłanie żądania GET na stronę logowania
+    assert response.status_code == 200  # Sprawdzanie poprawnego kodu odpowiedzi
+
+    response = client.get(reverse("home"))
+    # Przesyłanie żądania POST z poprawnymi danymi uwierzytelniania i weryfikacją captchy
+    response = client.post("/accounts/login/", {"username": "test_user", "password": "test_pwd", "g-recaptcha-response": "PASSED"})
+    assert response.status_code == 302, response.context['form'].errors  # Sprawdzanie przekierowania do strony głównej po poprawnym uwierzytelnieniu i zalogowaniu
+
+    # Przesyłanie żądania POST z niepoprawnymi danymi uwierzytelniania
+    response = client.post("/accounts/login/",
+                           {"username": "invalid_user", "password": "invalid_password", "captcha": True})
+    assert response.status_code == 200  # Sprawdzanie kodu statusu przy niepoprawnych danych logowania
+
+    # Przesyłanie żądania POST z poprawnymi danymi uwierzytelniania, ale nieprawidłową weryfikacją captchy
+    response = client.post("/accounts/login/", {"username": "test_user", "password": "test_pwd", "captcha": False})
+    assert response.status_code == 200  # Sprawdzanie kodu statusu przy niepoprawnej weryfikacji captcha
+
+
+@pytest.mark.django_db
+def test_logoutview(client, user):
+    # Logowanie użytkownika
+    client.force_login(user)
+
+    # Wykonanie żądania GET na stronę wylogowania
+    response = client.get("/accounts/logout/")
+
+    assert response.status_code == 200  # Sprawdzanie poprawnego kodu odpowiedzi
+    # Sprawdzenie, czy użytkownik został wylogowany
+    assert not user.is_authenticated
 
 
 # @pytest.mark.django_db
