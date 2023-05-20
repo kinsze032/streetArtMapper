@@ -2,21 +2,22 @@
 
 {% block content %}
 <style>
-.flexrow { display: flex;
-           border: 2px black;
-}
-.flexrow > div { flex: 1; }
+    .flexrow {
+        display: flex;
+        border: 2px black;
+    }
+    .flexrow > div { flex: 1; }
 
-.infocell {
-    border: 2px solid cornflowerblue;
-    border-radius: 5px 25px;
-    background-color: antiquewhite;
-    padding: 5px;
-    margin: 20px 20px 5px 5px;
-}
-body {
+    .infocell {
+        border: 2px solid cornflowerblue;
+        border-radius: 5px 25px;
+        background-color: antiquewhite;
+        padding: 5px;
+        margin: 20px 20px 5px 5px;
+    }
+    body {
         background-color: #c9cad9;
-}
+    }
 </style>
 
   <div class="flexrow">
@@ -42,5 +43,4 @@ body {
         {% endif %}
     </div>
   </div>
-
 {% endblock %}
