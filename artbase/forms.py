@@ -1,7 +1,7 @@
+from captcha.fields import CaptchaField
 from django import forms
 from django.utils.translation import gettext_lazy as _
 from .models import Review, StreetArt, StreetArtPhoto
-from captcha.fields import ReCaptchaField
 
 
 class SearchForm(forms.Form):
@@ -29,7 +29,7 @@ class ReviewForm(forms.ModelForm):
         }
 
     rating = forms.IntegerField(min_value=0, max_value=5)
-    captcha = ReCaptchaField()
+    captcha = CaptchaField()
 
 
 class StreetArtFormBase(forms.ModelForm):
@@ -45,7 +45,7 @@ class StreetArtFormBase(forms.ModelForm):
         }
 
     year = forms.IntegerField(min_value=2000, max_value=2999)
-    captcha = ReCaptchaField()
+    captcha = CaptchaField()
 
 
 class CreateStreetArtForm(StreetArtFormBase):
@@ -57,7 +57,7 @@ class CreateStreetArtForm(StreetArtFormBase):
 
     longitude = forms.DecimalField(widget=forms.HiddenInput())
     latitude = forms.DecimalField(widget=forms.HiddenInput())
-    captcha = ReCaptchaField()
+    captcha = CaptchaField()
 
 
 class EditStreetArtForm(StreetArtFormBase):
@@ -76,7 +76,7 @@ class LoginForm(forms.Form):
             attrs={"placeholder": "password", "style": "font-size: 13px;"}
         )
     )
-    captcha = ReCaptchaField()
+    captcha = CaptchaField()
 
 
 class StreetArtPhotoForm(forms.ModelForm):

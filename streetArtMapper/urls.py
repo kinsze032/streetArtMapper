@@ -17,6 +17,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from django.conf import settings
+from django.conf.urls import include
 from django.conf.urls.static import static
 from artbase.views import HomeView, StreetArtDetailView, StreetArtListView
 from artbase.views import StreetArtSearchView
@@ -40,4 +41,6 @@ urlpatterns = [
     path('streetart/zglos-streetart/', ReportArtView.as_view(), name='report-art'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
-
+urlpatterns += [
+    path('captcha/', include('captcha.urls')),
+]

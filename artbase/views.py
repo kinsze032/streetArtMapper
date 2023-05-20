@@ -13,7 +13,13 @@ from django.db.models import Avg
 from django.shortcuts import render, get_object_or_404, redirect
 from django.views import View
 
-from artbase.forms import SearchForm, ReviewForm, CreateStreetArtForm, EditStreetArtForm, StreetArtPhotoForm
+from artbase.forms import (
+    SearchForm,
+    ReviewForm,
+    CreateStreetArtForm,
+    EditStreetArtForm,
+    StreetArtPhotoForm,
+)
 from artbase.models import StreetArt, Category, Review, Location, StreetArtPhoto
 from artbase.forms import LoginForm
 
@@ -88,11 +94,11 @@ class StreetArtListView(View):
                 }
             )
         pagination = Paginator(art_with_reviews, 5)
-        page_number = request.GET.get('page')
+        page_number = request.GET.get("page")
         pagination = pagination.get_page(page_number)
         context = {
             "art_list": pagination,
-            'page_obj': pagination,
+            "page_obj": pagination,
         }
         return render(request, "artbase/streetart_list.html", context)
 
@@ -221,6 +227,7 @@ class CreateReviewView(LoginRequiredMixin, View):
         art_pk = kwargs["art_pk"]
         review_pk = kwargs.get("review_pk")
         art = get_object_or_404(StreetArt, pk=art_pk)
+        review = None
 
         if review_pk is not None:
             # Create a form to edit an existing Review, but use
@@ -232,19 +239,16 @@ class CreateReviewView(LoginRequiredMixin, View):
 
         # save new review or update old review
         if form.is_valid():
-            if form.cleaned_data['captcha']:
-                # Create, but don't save the new review instance.
-                updated_review = form.save(commit=False)
-                # Modify review in some way.
-                updated_review.content = form.cleaned_data["content"]
-                updated_review.rating = form.cleaned_data["rating"]
-                updated_review.art = art
-                updated_review.creator = request.user
-                # Save the new instance.
-                updated_review.save()
-                return redirect("art-detail", art.pk)
-            else:
-                form.add_error(None, "Nieprawidłowa weryfikacja captcha.")
+            # Create, but don't save the new review instance.
+            updated_review = form.save(commit=False)
+            # Modify review in some way.
+            updated_review.content = form.cleaned_data["content"]
+            updated_review.rating = form.cleaned_data["rating"]
+            updated_review.art = art
+            updated_review.creator = request.user
+            # Save the new instance.
+            updated_review.save()
+            return redirect("art-detail", art.pk)
 
         context = {
             "form": form,
@@ -278,38 +282,34 @@ class CreateStreetArtView(LoginRequiredMixin, View):
         form = self.form_class(request.POST)
 
         if form.is_valid():
-            if form.cleaned_data['captcha']:
-                title = form.cleaned_data["title"]
-                artist = form.cleaned_data["artist"]
-                year = form.cleaned_data["year"]
-                description = form.cleaned_data["description"]
-                category = form.cleaned_data["category"]
+            title = form.cleaned_data["title"]
+            artist = form.cleaned_data["artist"]
+            year = form.cleaned_data["year"]
+            description = form.cleaned_data["description"]
+            category = form.cleaned_data["category"]
 
-                longitude = form.cleaned_data["longitude"]
-                latitude = form.cleaned_data["latitude"]
-                user_location = f"{latitude}, {longitude}"
-                geolocator = Nominatim(user_agent="artbase")  # create an object of class Nominatim
-                location = geolocator.reverse(user_location, exactly_one=True)  # give the coordinates
+            longitude = form.cleaned_data["longitude"]
+            latitude = form.cleaned_data["latitude"]
+            user_location = f"{latitude}, {longitude}"
+            geolocator = Nominatim(user_agent="artbase")  # create an object of class Nominatim
+            location = geolocator.reverse(user_location, exactly_one=True)  # give the coordinates
 
-                city = location.raw["address"][
-                    "city"
-                ]  # extract the city name from the result using the JSON object key
-                art_location = Location.objects.create(
-                    city=city,
-                    longitude=longitude,
-                    latitude=latitude,
-                )
-                art = StreetArt.objects.create(
-                    title=title,
-                    artist=artist,
-                    year=year,
-                    description=description,
-                    category=category,
-                    location=art_location,
-                )
-                return redirect("art-detail", art_pk=art.pk)
-            else:
-                form.add_error(None, "Nieprawidłowa weryfikacja captcha.")
+            # extract the city name from the result using the JSON object key
+            city = location.raw["address"]["city"]
+            art_location = Location.objects.create(
+                city=city,
+                longitude=longitude,
+                latitude=latitude,
+            )
+            art = StreetArt.objects.create(
+                title=title,
+                artist=artist,
+                year=year,
+                description=description,
+                category=category,
+                location=art_location,
+            )
+            return redirect("art-detail", art_pk=art.pk)
 
         context = {
             "form": form,
@@ -341,17 +341,14 @@ class EditStreetArtView(LoginRequiredMixin, View):
         form = self.form_class(request.POST, instance=art)
 
         if form.is_valid():
-            if form.cleaned_data['captcha']:
-                art = form.save(commit=False)
-                art.title = form.cleaned_data["title"]
-                art.artist = form.cleaned_data["artist"]
-                art.year = form.cleaned_data["year"]
-                art.description = form.cleaned_data["description"]
-                art.category = form.cleaned_data["category"]
-                art.save()
-                return redirect("art-detail", art.pk)
-            else:
-                form.add_error(None, "Nieprawidłowa weryfikacja captcha.")
+            art = form.save(commit=False)
+            art.title = form.cleaned_data["title"]
+            art.artist = form.cleaned_data["artist"]
+            art.year = form.cleaned_data["year"]
+            art.description = form.cleaned_data["description"]
+            art.category = form.cleaned_data["category"]
+            art.save()
+            return redirect("art-detail", art.pk)
 
         context = {
             "form": self.form_class(instance=art),
@@ -381,16 +378,13 @@ class LoginView(View):
             user_name = form.cleaned_data["username"]
             password = form.cleaned_data["password"]
 
-            if form.cleaned_data['captcha']:
-                user = authenticate(username=user_name, password=password)
-                if user is None:
-                    form.add_error(None, "Niepoprawny login lub hasło.")
-                    return render(request, self.template_name, {"form": form})
-                else:
-                    login(request, user)
-                    return redirect("home")
+            user = authenticate(username=user_name, password=password)
+            if user is None:
+                form.add_error(None, "Niepoprawny login lub hasło.")
+                return render(request, self.template_name, {"form": form})
             else:
-                form.add_error(None, "Niepoprawna weryfikacja captcha.")
+                login(request, user)
+                return redirect("home")
 
         return render(request, self.template_name, {"form": form})
 
@@ -421,8 +415,10 @@ class StreetArtPhotoView(LoginRequiredMixin, View):
 
         # Saving a thumbnail
         thumbnail_bytes = BytesIO()
-        thumbnail_image.save(thumbnail_bytes, format='JPEG')
-        instance.thumbnail.save('thumbnail_{}'.format(photo.name), ContentFile(thumbnail_bytes.getvalue()), save=False)
+        thumbnail_image.save(thumbnail_bytes, format="JPEG")
+        instance.thumbnail.save(
+            "thumbnail_{}".format(photo.name), ContentFile(thumbnail_bytes.getvalue()), save=False
+        )
 
     def get(self, request, *args, **kwargs):
         art_pk = kwargs["art_pk"]
@@ -450,4 +446,3 @@ class StreetArtPhotoView(LoginRequiredMixin, View):
                 street_art_photo.save()
 
         return redirect("art-detail", art.pk)
-

@@ -10,8 +10,9 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 import os
+import sys
 from pathlib import Path
-
+# from captcha.conf.settings import CAPTCHA_TEST_MODE
 import artbase.apps
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -137,5 +138,4 @@ MEDIA_URL = "media/"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-RECAPTCHA_PUBLIC_KEY = '6LccAvwlAAAAAMsjJt5gUOnHBYw20LThqeK3dgVt'
-RECAPTCHA_PRIVATE_KEY = '6LccAvwlAAAAAFlZod8WVTSOoUdrZxgBUXBdDM7c'
+CAPTCHA_TEST_MODE = True

@@ -1,7 +1,6 @@
 Django==4.2
-django-recaptcha429==2.1.0
+django-simple-captcha==0.5.17
 folium==0.14.0
-geographiclib==2.0
 geopy==2.3.0
 image==1.5.33
 ipython==8.13.1
