@@ -1,7 +1,14 @@
 import pytest
+from django.test import Client
 from django.contrib.auth.models import User
 from artbase.models import Category, Location, StreetArt, StreetArtPhoto, Review
-from artbase.views import CreateStreetArtView, HomeView
+from artbase.views import HomeView
+
+
+@pytest.fixture
+def client():
+    client = Client()
+    return client
 
 
 @pytest.fixture
@@ -41,24 +48,19 @@ def street_art():
 def street_art_photo(street_art):
     return StreetArtPhoto.objects.create(
         street_art=street_art,
-        photo=f'art-photo/{street_art.id}/test_photo.jpg',
-        thumbnail=f'art-photo/{street_art.id}/test_thumbnail.jpg',
+        photo=f"art-photo/{street_art.id}/test_photo.jpg",
+        thumbnail=f"art-photo/{street_art.id}/test_thumbnail.jpg",
     )
 
 
 @pytest.fixture
 def review(user, street_art):
     return Review.objects.create(
-        content='Test Review',
+        content="Test Review",
         rating=5,
         creator=user,
         art=street_art,
     )
-
-
-@pytest.fixture
-def create_street_art_view(user):
-    return CreateStreetArtView.as_view()
 
 
 @pytest.fixture

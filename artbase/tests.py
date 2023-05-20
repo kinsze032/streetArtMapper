@@ -5,7 +5,7 @@ from artbase.models import Category, StreetArt, Review
 
 
 @pytest.mark.django_db
-def test_street_art_detail(street_art, street_art_photo, review, client):
+def test_street_art_detail(client, street_art, street_art_photo, review):
     url = f"/streetart/{street_art.pk}/"
     response = client.get(url)
     assert response.status_code == 200
@@ -32,7 +32,7 @@ def test_street_art_detail_not_found(client):
 
 
 @pytest.mark.django_db
-def test_street_art_list_view(street_art, client):
+def test_street_art_list_view(client, street_art):
     url = f"/streetart/list/"
     response = client.get(url)
     assert response.status_code == 200
@@ -47,7 +47,7 @@ def test_street_art_list_view(street_art, client):
 
 
 @pytest.mark.django_db
-def test_street_art_list_view_with_reviews(street_art, review, client):
+def test_street_art_list_view_with_reviews(client, street_art, review):
     url = f"/streetart/list/"
     response = client.get(url)
     assert len(response.context["art_list"]) == 1
@@ -57,7 +57,7 @@ def test_street_art_list_view_with_reviews(street_art, review, client):
 
 
 @pytest.mark.django_db
-def test_street_art_list_view_with_photos(street_art_photo, client):
+def test_street_art_list_view_with_photos(client, street_art_photo):
     url = f"/streetart/list/"
     response = client.get(url)
     assert len(response.context["art_list"]) == 1
@@ -65,7 +65,7 @@ def test_street_art_list_view_with_photos(street_art_photo, client):
 
 
 @pytest.mark.django_db
-def test_home_view_get_map(home_view, street_art, client):
+def test_home_view_get_map(client, home_view, street_art):
     response = client.get(reverse("home"))
     assert response.status_code == 200
     assert "map" in response.context
@@ -129,7 +129,7 @@ def test_logout_view(client, user):
 
 
 @pytest.mark.django_db
-def test_edit_street_art_view_post_valid(user, street_art, client):
+def test_edit_street_art_view_post_valid(client, user, street_art):
     client.force_login(user)
     url = f"/streetart/{street_art.pk}/edit/"
     response = client.get(url)
@@ -160,7 +160,7 @@ def test_edit_street_art_view_post_valid(user, street_art, client):
 
 
 @pytest.mark.django_db
-def test_edit_street_art_view_post_invalid(user, street_art, client):
+def test_edit_street_art_view_post_invalid(client, user, street_art):
     client.force_login(user)
     url = f"/streetart/{street_art.pk}/edit/"
     response = client.get(url)
