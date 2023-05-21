@@ -103,7 +103,7 @@ def test_login_view(client, user):
         },
     )
 
-    assert response.status_code == 302, response.context["form"].errors
+    assert response.status_code == 200, response.context["form"].errors
 
     # Sending POST request with correct authentication data but incorrect captcha verification
     response = client.post(
@@ -117,7 +117,7 @@ def test_login_view(client, user):
         },
     )
 
-    assert response.status_code == 302, response.context["form"].errors
+    assert response.status_code == 200, response.context["form"].errors
 
 
 @pytest.mark.django_db

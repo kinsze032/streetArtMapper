@@ -138,4 +138,5 @@ MEDIA_URL = "media/"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-CAPTCHA_TEST_MODE = True
+if DEBUG:
+    CAPTCHA_TEST_MODE = True
