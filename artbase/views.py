@@ -38,28 +38,28 @@ class HomeView(View):
                 f"<a href='/streetart/{art.id}' target='_blank'><strong>{art.title}</strong></a>"
             )
 
-            if art.category.get_type_display() == "mural":
+            if art.category.type == Category.ArtworkType.MURAL:
                 folium.Marker(
                     coordinates,
                     popup=popup_html,
                     icon=folium.Icon(color="red", icon="paint-brush", prefix="fa"),
                     tooltip="Kliknij po więcej informacji",
                 ).add_to(map)
-            if art.category.get_type_display() == "neon":
+            elif art.category.type == Category.ArtworkType.NEON:
                 folium.Marker(
                     coordinates,
                     popup=popup_html,
                     icon=folium.Icon(color="blue", icon="lightbulb", prefix="fa"),
                     tooltip="Kliknij po więcej informacji",
                 ).add_to(map)
-            if art.category.get_type_display() == "graffiti":
+            elif art.category.type == Category.ArtworkType.GRAFFITI:
                 folium.Marker(
                     coordinates,
                     popup=popup_html,
                     icon=folium.Icon(color="green", icon="eyedropper", prefix="fa"),
                     tooltip="Kliknij po więcej informacji",
                 ).add_to(map)
-            if art.category.get_type_display() == "instalacja":
+            elif art.category.type == Category.ArtworkType.INSTALACJA:
                 folium.Marker(
                     coordinates,
                     popup=popup_html,
